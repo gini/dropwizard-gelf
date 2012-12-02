@@ -1,0 +1,10 @@
+.idea
+target
+atlassian-ide-plugin.xml
+logs
+*.iml
+*.ipr
+#Eclipse-specific
+.settings/
+.classpath
+.project
