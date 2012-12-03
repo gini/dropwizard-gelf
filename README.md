@@ -4,6 +4,8 @@ Dropwizard GELF Bundle
 Addon bundle for Dropwizard to support logging to a GELF-enabled server like [Graylog2](http://graylog2.org/)
 or [logstash](http://logstash.net/) using the [GELF appender for Logback](https://github.com/Moocar/logback-gelf).
 
+[![Build Status](https://secure.travis-ci.org/smarchive/dropwizard-gelf.png?branch=master)](https://travis-ci.org/smarchive/dropwizard-gelf)
+
 
 Usage
 -----
