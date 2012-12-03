@@ -47,6 +47,26 @@ Configuration
 The Logback GELF appender can be configured using the provided GelfConfiguration class which basically mirrors the
 appender configuration outlined in [logback-gelf README](https://github.com/Moocar/logback-gelf/blob/master/README.md).
 
+Your YAML configuration could include the following snippet to configure the GelfLoggingBundle:
+
+    gelf:
+      enabled: true
+      facility: MyService
+      # threshold: ALL
+      # host: localhost
+      # port: 12201
+      # useLoggerName: true
+      # useThreadName: true
+      # serverVersion: 0.9.6
+      # chunkThreshold: 1000
+      # messagePattern = "%m%rEx";
+      additionalFields:
+        remoteAddress: _remoteAddress
+        httpMethod: _httpMethod
+        requestUri: _requestUri
+        responseStatus: _responseStatus
+        responseTimeNanos: _responseTime
+
 
 Drawbacks
 ---------
