@@ -38,6 +38,11 @@
         <url>https://github.com/smarchive/dropwizard-gelf</url>
     </scm>
 
+    <ciManagement>
+        <system>Travis CI</system>
+        <url>https://travis-ci.org/smarchive/dropwizard-gelf</url>
+    </ciManagement>
+
     <issueManagement>
         <url>https://github.com/smarchive/dropwizard-gelf/issues</url>
         <system>GitHub Issues</system>
