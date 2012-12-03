@@ -143,7 +143,7 @@ public class GelfLoggingFilter implements Filter {
 
     }
 
-    private final class CountingServletOutputStream extends ServletOutputStream {
+    private static final class CountingServletOutputStream extends ServletOutputStream {
 
         private final CountingOutputStream outputStream;
 
@@ -176,7 +176,7 @@ public class GelfLoggingFilter implements Filter {
         }
     }
 
-    private final class CountingHttpServletResponseWrapper extends HttpServletResponseWrapper {
+    private static final class CountingHttpServletResponseWrapper extends HttpServletResponseWrapper {
 
         private final CountingServletOutputStream outputStream;
 
