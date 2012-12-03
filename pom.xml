@@ -16,6 +16,7 @@
     <groupId>com.smarchive.dropwizard</groupId>
     <artifactId>dropwizard-gelf</artifactId>
     <version>0.1-SNAPSHOT</version>
+    <packaging>jar</packaging>
 
     <name>Dropwizard GELF Bundle</name>
     <description>
@@ -41,6 +42,16 @@
         <url>https://github.com/smarchive/dropwizard-gelf/issues</url>
         <system>GitHub Issues</system>
     </issueManagement>
+
+    <developers>
+        <developer>
+            <id>j.schalanda</id>
+            <name>Jochen Schalanda</name>
+            <email>j.schalanda@smarchive.de</email>
+            <organization>smarchive GmbH</organization>
+            <organizationUrl>https://www.smarchive.com/</organizationUrl>
+        </developer>
+    </developers>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
