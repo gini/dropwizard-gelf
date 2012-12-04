@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * A {@link Filter} which logs requests and adds some data about it to the logger's {@link MDC}.
  */
 public class GelfLoggingFilter implements Filter {
 
@@ -41,9 +42,13 @@ public class GelfLoggingFilter implements Filter {
      * <li>Throws a ServletException
      * <li>Does not return within a time period defined by the web container
      * </ol>
+     *
+     * @param filterConfig the {@link FilterChain} for this {@link Filter}
+     * @throws ServletException if something goes wrong
      */
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
+        // Do nothing
     }
 
     /**
@@ -121,6 +126,7 @@ public class GelfLoggingFilter implements Filter {
 
         LOG.info("{} {} {}", httpRequest.getMethod(), httpRequest.getRequestURI(), httpRequest.getProtocol());
 
+        // This should be safe since the request has been processed completely
         MDC.clear();
     }
 
@@ -140,9 +146,13 @@ public class GelfLoggingFilter implements Filter {
      */
     @Override
     public void destroy() {
-
+        // Do nothing
     }
 
+    /**
+     * An implementation of {@link ServletOutputStream} which counts the bytes being
+     * written using a {@link CountingOutputStream}.
+     */
     private static final class CountingServletOutputStream extends ServletOutputStream {
 
         private final CountingOutputStream outputStream;
@@ -176,6 +186,10 @@ public class GelfLoggingFilter implements Filter {
         }
     }
 
+    /**
+     * An implementation of {@link HttpServletResponseWrapper} which counts the bytes being written as the response
+     * body using a {@link CountingServletOutputStream}.
+     */
     private static final class CountingHttpServletResponseWrapper extends HttpServletResponseWrapper {
 
         private final CountingServletOutputStream outputStream;
@@ -195,6 +209,11 @@ public class GelfLoggingFilter implements Filter {
             return outputStream;
         }
 
+        /**
+         * Get the number of bytes written to the response output stream.
+         *
+         * @return the number of bytes written to the response output stream
+         */
         public long getCount() {
             return outputStream.getCount();
         }

@@ -17,6 +17,7 @@ import me.moocar.logbackgelf.GelfAppender;
 import org.slf4j.LoggerFactory;
 
 /**
+ * Dropwizard {@link ConfiguredBundle} which configures and adds {@link GelfAppender} to Logback.
  */
 public abstract class GelfLoggingBundle<T extends Configuration> implements ConfiguredBundle<T> {
     /**
@@ -37,6 +38,13 @@ public abstract class GelfLoggingBundle<T extends Configuration> implements Conf
         }
     }
 
+    /**
+     * Build the {@link GelfAppender} from the supplied {@link GelfConfiguration}.
+     *
+     * @param configuration The configuration for the {@link GelfAppender}
+     * @param context       The logger context
+     * @return A fully configured and started {@link Appender}
+     */
     private Appender<ILoggingEvent> buildGelfAppender(GelfConfiguration configuration, LoggerContext context) {
 
         final GelfAppender<ILoggingEvent> appender = new GelfAppender<ILoggingEvent>();
@@ -57,6 +65,12 @@ public abstract class GelfLoggingBundle<T extends Configuration> implements Conf
         return appender;
     }
 
+    /**
+     * Add a {@link ThresholdFilter} to the supplied appender.
+     *
+     * @param appender  The appender to add the filter to
+     * @param threshold The filter threshold
+     */
     private static void addThresholdFilter(FilterAttachable<ILoggingEvent> appender, Level threshold) {
         final ThresholdFilter filter = new ThresholdFilter();
         filter.setLevel(threshold.toString());
@@ -65,7 +79,7 @@ public abstract class GelfLoggingBundle<T extends Configuration> implements Conf
     }
 
     /**
-     * Initializes the service bootstrap.
+     * Initializes the service bootstrap. Does nothing for this implementation.
      *
      * @param bootstrap the service bootstrap
      */
@@ -74,5 +88,11 @@ public abstract class GelfLoggingBundle<T extends Configuration> implements Conf
         // Do nothing
     }
 
+    /**
+     * Get the {@link GelfConfiguration} object from the supplied {@link Configuration}.
+     *
+     * @param configuration The {@link Configuration} of the service
+     * @return The {@link GelfConfiguration} of the service
+     */
     public abstract GelfConfiguration getConfiguration(T configuration);
 }
