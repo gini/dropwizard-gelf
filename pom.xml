@@ -64,6 +64,7 @@
         <jackson.version>2.1.1</jackson.version>
         <slf4j.version>1.7.2</slf4j.version>
         <logback.version>1.0.7</logback.version>
+        <github.global.server>github</github.global.server>
     </properties>
 
     <dependencies>
@@ -193,6 +194,22 @@
                         </plugin>
                     </reportPlugins>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.github.github</groupId>
+                <artifactId>site-maven-plugin</artifactId>
+                <version>0.7</version>
+                <configuration>
+                    <message>Creating site for ${project.version}</message>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>site</goal>
+                        </goals>
+                        <phase>site</phase>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
