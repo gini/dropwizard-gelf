@@ -22,7 +22,7 @@ To enable the GelfLoggingBundle simply add the following code to your [Service](
         bootstrap.addBundle(new GelfLoggingBundle() {
                 @Override
                 public GelfConfiguration getConfiguration(MyServiceConfiguration configuration) {
-                    return configuration.getGelfConfiguration();
+                    return configuration.getGelf();
                 }
             });
     }
