@@ -83,6 +83,19 @@ On the long run the clean solution would be to add pluggable log handlers to Dro
 current abstraction.
 
 
+Maven Artifacts
+---------------
+
+This project is available on Maven Central. To add it to your project simply add the following dependencies to your
+`pom.xml`:
+
+    <dependency>
+      <groupId>com.smarchive.dropwizard</groupId>
+      <artifactId>dropwizard-gelf</artifactId>
+      <version>0.1</version>
+    </dependency>
+
+
 Acknowledgements
 ----------------
 
