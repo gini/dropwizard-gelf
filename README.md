@@ -19,7 +19,7 @@ To enable the GelfLoggingBundle simply add the following code to your [Service](
 
     @Override
     public void initialize(Bootstrap<MyServiceConfiguration> bootstrap) {
-        bootstrap.addBundle(new GelfLoggingBundle() {
+        bootstrap.addBundle(new GelfLoggingBundle<MyServiceConfiguration>() {
                 @Override
                 public GelfConfiguration getConfiguration(MyServiceConfiguration configuration) {
                     return configuration.getGelf();
@@ -61,7 +61,7 @@ Your YAML configuration could include the following snippet to configure the Gel
       # useThreadName: true
       # serverVersion: 0.9.6
       # chunkThreshold: 1000
-      # messagePattern = "%m%rEx";
+      # messagePattern: %m%rEx
       additionalFields:
         remoteAddress: _remoteAddress
         httpMethod: _httpMethod
