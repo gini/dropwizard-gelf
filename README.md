@@ -36,7 +36,7 @@ of your service:
 
     @Override
     public void run(MyServiceConfiguration configuration, Environment environment) {
-        environment.addFilter(new GelfLoggingFilter(), "/.*");
+        environment.addFilter(new GelfLoggingFilter(), "/*");
     }
 
 The servlet filter adds a lot of data to the [Mapped Diagnostic Context (MDC)](http://logback.qos.ch/manual/mdc.html) which
