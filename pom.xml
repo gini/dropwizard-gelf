@@ -14,7 +14,7 @@
 
     <groupId>com.smarchive.dropwizard</groupId>
     <artifactId>dropwizard-gelf</artifactId>
-    <version>0.2</version>
+    <version>0.3-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Dropwizard GELF Bundle</name>
@@ -35,7 +35,7 @@
         <developerConnection>scm:git:git@github.com:smarchive/dropwizard-gelf.git</developerConnection>
         <connection>scm:git:github.com/smarchive/dropwizard-gelf.git</connection>
         <url>https://github.com/smarchive/dropwizard-gelf</url>
-      <tag>dropwizard-gelf-0.2</tag>
+        <tag>HEAD</tag>
   </scm>
 
     <ciManagement>
