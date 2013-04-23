@@ -191,13 +191,10 @@ public class GelfLoggingFilter implements Filter {
      * body using a {@link CountingServletOutputStream}.
      */
     private static final class CountingHttpServletResponseWrapper extends HttpServletResponseWrapper {
-
-        private final CountingServletOutputStream outputStream;
+        private CountingServletOutputStream outputStream;
 
         private CountingHttpServletResponseWrapper(HttpServletResponse response) throws IOException {
             super(response);
-
-            outputStream = new CountingServletOutputStream(response.getOutputStream());
         }
 
         /**
@@ -206,6 +203,9 @@ public class GelfLoggingFilter implements Filter {
          */
         @Override
         public ServletOutputStream getOutputStream() throws IOException {
+            if (outputStream == null) {
+                outputStream = new CountingServletOutputStream(getResponse().getOutputStream());
+            }
             return outputStream;
         }
 
@@ -215,7 +215,29 @@ public class GelfLoggingFilter implements Filter {
          * @return the number of bytes written to the response output stream
          */
         public long getCount() {
-            return outputStream.getCount();
+            return outputStream == null ? 0L : outputStream.getCount();
+        }
+
+        /**
+         * The default behavior of this method is to call resetBuffer() on the wrapped response object.
+         *
+         * @see javax.servlet.http.HttpServletResponseWrapper#resetBuffer()
+         */
+        @Override
+        public void resetBuffer() {
+            super.resetBuffer();
+            outputStream = null;
+        }
+
+        /**
+         * The default behavior of this method is to call reset() on the wrapped response object.
+         *
+         * @see javax.servlet.http.HttpServletResponseWrapper#reset()
+         */
+        @Override
+        public void reset() {
+            super.reset();
+            outputStream = null;
         }
     }
 }
