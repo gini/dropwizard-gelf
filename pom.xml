@@ -12,7 +12,7 @@
         <version>7</version>
     </parent>
 
-    <groupId>com.smarchive.dropwizard</groupId>
+    <groupId>net.gini.dropwizard</groupId>
     <artifactId>dropwizard-gelf</artifactId>
     <version>0.3.0-SNAPSHOT</version>
     <packaging>jar</packaging>
@@ -21,7 +21,7 @@
     <description>
         Addon bundle for Dropwizard to support logging to a GELF-enabled server like Graylog2 or logstash
     </description>
-    <url>https://github.com/smarchive/dropwizard-gelf</url>
+    <url>https://github.com/gini/dropwizard-gelf</url>
 
     <licenses>
         <license>
@@ -32,19 +32,19 @@
     </licenses>
 
     <scm>
-        <developerConnection>scm:git:git@github.com:smarchive/dropwizard-gelf.git</developerConnection>
-        <connection>scm:git:github.com/smarchive/dropwizard-gelf.git</connection>
-        <url>https://github.com/smarchive/dropwizard-gelf</url>
+        <developerConnection>scm:git:git@github.com:gini/dropwizard-gelf.git</developerConnection>
+        <connection>scm:git:github.com/gini/dropwizard-gelf.git</connection>
+        <url>https://github.com/gini/dropwizard-gelf</url>
         <tag>HEAD</tag>
-  </scm>
+    </scm>
 
     <ciManagement>
         <system>Travis CI</system>
-        <url>https://travis-ci.org/smarchive/dropwizard-gelf</url>
+        <url>https://travis-ci.org/gini/dropwizard-gelf</url>
     </ciManagement>
 
     <issueManagement>
-        <url>https://github.com/smarchive/dropwizard-gelf/issues</url>
+        <url>https://github.com/gini/dropwizard-gelf/issues</url>
         <system>GitHub Issues</system>
     </issueManagement>
 
@@ -52,9 +52,9 @@
         <developer>
             <id>j.schalanda</id>
             <name>Jochen Schalanda</name>
-            <email>j.schalanda@smarchive.de</email>
-            <organization>smarchive GmbH</organization>
-            <organizationUrl>https://www.smarchive.com/</organizationUrl>
+            <email>j.schalanda@gini.net</email>
+            <organization>Gini GmbH</organization>
+            <organizationUrl>https://www.gini.net/</organizationUrl>
         </developer>
     </developers>
 
@@ -145,6 +145,9 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <keyname>tech@gini.net</keyname>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
