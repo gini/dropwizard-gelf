@@ -57,6 +57,9 @@ public class GelfConfiguration {
     @NotNull
     private ImmutableMap<String, String> additionalFields = ImmutableMap.of();
 
+    @JsonProperty
+    private boolean includeFullMDC = false;
+
     public boolean isEnabled() {
         return enabled;
     }
@@ -99,5 +102,9 @@ public class GelfConfiguration {
 
     public ImmutableMap<String, String> getAdditionalFields() {
         return additionalFields;
+    }
+
+    public boolean isIncludeFullMDC() {
+        return includeFullMDC;
     }
 }
