@@ -47,7 +47,7 @@ public abstract class GelfLoggingBundle<T extends Configuration> implements Conf
      */
     private Appender<ILoggingEvent> buildGelfAppender(GelfConfiguration configuration, LoggerContext context) {
 
-        final GelfAppender<ILoggingEvent> appender = new GelfAppender<ILoggingEvent>();
+        final GelfAppender appender = new GelfAppender();
 
         appender.setContext(context);
         appender.setFacility(configuration.getFacility());
