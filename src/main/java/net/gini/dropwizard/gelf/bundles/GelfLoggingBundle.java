@@ -61,6 +61,7 @@ public abstract class GelfLoggingBundle<T extends Configuration> implements Conf
         appender.setAdditionalFields(configuration.getAdditionalFields());
         appender.setStaticAdditionalFields(configuration.getStaticFields());
         appender.setIncludeFullMDC(configuration.isIncludeFullMDC());
+        appender.setUseMarker(configuration.isUseMarker());
         addThresholdFilter(appender, configuration.getThreshold());
         appender.start();
 

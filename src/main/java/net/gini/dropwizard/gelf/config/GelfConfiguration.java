@@ -64,6 +64,9 @@ public class GelfConfiguration {
     @JsonProperty
     private boolean includeFullMDC = false;
 
+    @JsonProperty
+    private boolean useMarker = false;
+
     public boolean isEnabled() {
         return enabled;
     }
@@ -114,5 +117,9 @@ public class GelfConfiguration {
 
     public boolean isIncludeFullMDC() {
         return includeFullMDC;
+    }
+
+    public boolean isUseMarker() {
+        return useMarker;
     }
 }
