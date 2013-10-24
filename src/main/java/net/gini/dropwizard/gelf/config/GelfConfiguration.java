@@ -1,4 +1,4 @@
-package com.smarchive.dropwizard.gelf.config;
+package net.gini.dropwizard.gelf.config;
 
 import ch.qos.logback.classic.Level;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -11,7 +11,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
 /**
- * Configuration class for settings related to {@link com.smarchive.dropwizard.gelf.bundles.GelfLoggingBundle}.
+ * Configuration class for settings related to {@link net.gini.dropwizard.gelf.bundles.GelfLoggingBundle}.
  */
 public class GelfConfiguration {
 

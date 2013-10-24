@@ -1,4 +1,4 @@
-package com.smarchive.dropwizard.gelf.filters;
+package net.gini.dropwizard.gelf.filters;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.io.CountingOutputStream;

@@ -1,4 +1,4 @@
-package com.smarchive.dropwizard.gelf.config;
+package net.gini.dropwizard.gelf.config;
 
 import org.junit.Test;
 

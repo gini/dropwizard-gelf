@@ -1,4 +1,4 @@
-package com.smarchive.dropwizard.gelf.bundles;
+package net.gini.dropwizard.gelf.bundles;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -7,7 +7,7 @@ import ch.qos.logback.classic.filter.ThresholdFilter;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.spi.FilterAttachable;
-import com.smarchive.dropwizard.gelf.config.GelfConfiguration;
+import net.gini.dropwizard.gelf.config.GelfConfiguration;
 import com.yammer.dropwizard.ConfiguredBundle;
 import com.yammer.dropwizard.config.Bootstrap;
 import com.yammer.dropwizard.config.Configuration;
