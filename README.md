@@ -1,20 +1,19 @@
 Dropwizard GELF Bundle
 ======================
+[![Build Status](https://secure.travis-ci.org/gini/dropwizard-gelf.png?branch=master)](https://travis-ci.org/gini/dropwizard-gelf)
 
 Addon bundle for Dropwizard to support logging to a GELF-enabled server like [Graylog2](http://graylog2.org/)
 or [logstash](http://logstash.net/) using the [GELF appender for Logback](https://github.com/Moocar/logback-gelf).
-
-[![Build Status](https://secure.travis-ci.org/smarchive/dropwizard-gelf.png?branch=master)](https://travis-ci.org/smarchive/dropwizard-gelf)
 
 
 Usage
 -----
 
-dropwizard-gelf consists of two parts, a [ConfiguredBundle](http://dropwizard.codahale.com/maven/apidocs/com/yammer/dropwizard/ConfiguredBundle.html)
+The Dropwizard GELF bundle consists of two parts, a [ConfiguredBundle](http://dropwizard.codahale.com/maven/apidocs/com/yammer/dropwizard/ConfiguredBundle.html)
 and a [Servlet Filter](http://docs.oracle.com/javaee/6/api/javax/servlet/Filter.html) which can optionally be used to
 send HTTP request logs to a GELF-enabled server.
 
-To enable the GelfLoggingBundle simply add the following code to your [Service](http://dropwizard.codahale.com/maven/apidocs/com/yammer/dropwizard/Service.html)'s
+To enable the `GelfLoggingBundle` simply add the following code to your [Service](http://dropwizard.codahale.com/maven/apidocs/com/yammer/dropwizard/Service.html)'s
 [initialize method](http://dropwizard.codahale.com/maven/apidocs/com/yammer/dropwizard/Service.html#initialize%28com.yammer.dropwizard.config.Bootstrap%29):
 
     @Override
@@ -27,7 +26,7 @@ To enable the GelfLoggingBundle simply add the following code to your [Service](
             });
     }
 
-You also need to add a field for GelfConfiguration to your own [Configuration](http://dropwizard.codahale.com/maven/apidocs/com/yammer/dropwizard/config/Configuration.html)
+You also need to add a field for `GelfConfiguration` to your own [Configuration](http://dropwizard.codahale.com/maven/apidocs/com/yammer/dropwizard/config/Configuration.html)
 class.
 
 In order to log HTTP requests being sent to your service you need to add the GelfLoggingFilter in the
@@ -46,28 +45,88 @@ can be used as additional fields, e. g. `remoteAddress`, `requestUri`, or `respo
 Configuration
 -------------
 
-The Logback GELF appender can be configured using the provided GelfConfiguration class which basically mirrors the
+The Logback GELF appender can be configured using the provided `GelfConfiguration` class which basically mirrors the
 appender configuration outlined in [logback-gelf README](https://github.com/Moocar/logback-gelf/blob/master/README.md).
 
-Your YAML configuration could include the following snippet to configure the GelfLoggingBundle:
+Your YAML configuration could include the following snippet to configure the `GelfLoggingBundle`:
 
     gelf:
       enabled: true
-      facility: MyService
+      # facility: MyService
       # threshold: ALL
       # host: localhost
       # port: 12201
       # useLoggerName: true
       # useThreadName: true
+      # useMarker: false
       # serverVersion: 0.9.6
       # chunkThreshold: 1000
       # messagePattern: %m%rEx
+      # shortMessagePattern: %.-100(%m%rEx)
+      includeFullMDC: true
       additionalFields:
         remoteAddress: _remoteAddress
         httpMethod: _httpMethod
         requestUri: _requestUri
         responseStatus: _responseStatus
         responseTimeNanos: _responseTime
+      staticAdditionalField:
+        _node_name:www013
+
+
+Properties
+----------
+
+*   **enabled**: Specify if logging to a GELF-compatible server should be enabled. Defaults to false;
+*   **facility**: The name of your service. Appears in facility column in the Graylog2 web interface. Defaults to "GELF";
+*   **host**: The hostname of the Graylog2 server to send messages to. Defaults to "localhost";
+*   **port**: The port of the Graylog2 server to send messages to. Defaults to 12201;
+*   **useLoggerName**: If true, an additional field call "_loggerName" will be added to each GELF message. Its contents
+will be the fully qualified name of the logger. e.g: com.company.Thingo. Defaults to true;
+*   **useThreadName**: If true, an additional field call "_threadName" will be added to each GELF message. Its contents
+will be the name of the thread. Defaults to true;
+*   **serverVersion**: Specify which version the graylog2-server is. This is important because the GELF headers
+changed from 0.9.5 -> 0.9.6. Allowed values = 0.9.5 and 0.9.6. Defaults to "0.9.6";
+*   **chunkThreshold**: The maximum number of bytes allowed by the payload before the message should be chunked into
+smaller packets. Defaults to 1000;
+*   **useMarker**: If true, and the user has used an [SLF4J marker](http://slf4j.org/api/org/slf4j/Marker.html) in their
+log message by using one of the marker-overloaded [log methods](http://slf4j.org/api/org/slf4j/Logger.html), then the
+`marker.toString()` will be added to the GELF message as the field `_marker`.  Defaults to false;
+*   **messagePattern**: The layout of the actual message according to
+[PatternLayout](http://logback.qos.ch/manual/layouts.html#conversionWord). Defaults to "%m%rEx";
+*   **shortMessagePattern**: The layout of the short message according to
+[PatternLayout](http://logback.qos.ch/manual/layouts.html#conversionWord). Defaults to none which means the message will
+be truncated to create the short message;
+*   **includeFullMDC**: Add all fields from the MDC will be added to the GELF message. If set to false, only the keys
+listed in additionalFields will be added to a GELF message. Defaults to false;
+*   **additionalFields**: Add additional fields filled from the [MDC](http://logback.qos.ch/manual/mdc.html).  Defaults to empty;
+*   **staticAdditionalFields**: Add static additional fields. Defaults to empty;
+
+
+Logging Jetty requests with GelfLoggingFilter
+---------------------------------------------
+
+If **includeFullMDC** is set to false, the desired fields must be added to the **additionalFields** section in the
+service configuration in order to be logged as additional fields in the GELF messages. Otherwise only a string similar
+(but not identical) to the NSCA request log format will be logged.
+
+Additional MDC entries populated by `GelfLoggingFilter`:
+
+* **remoteAddress**: The HTTP client's IP address
+* **httpMethod**: The HTTP method in the request
+* **protocol**: The HTTP protocol in the request (usually "HTTP/1.1")
+* **requestAuth**:
+* **userPrincipal**: The user name in the HTTP request
+* **requestUri**: The URI in the HTTP request
+* **requestLength**: The request size in bytes
+* **requestContentType**: The `Content-Type` header of the HTTP request
+* **requestEncoding**: The `Encoding` header of the HTTP request
+* **userAgent**: The `User-Agent` header of the HTTP request
+* **responseStatus**: The HTTP response status
+* **responseContentType**: The HTTP response content type
+* **responseEncoding**: The HTTP response encoding
+* **responseTimeNanos**: The elapsed time in nano seconds
+* **responseLength**: The length of the HTTP response
 
 
 Drawbacks
@@ -86,33 +145,32 @@ current abstraction.
 Maven Artifacts
 ---------------
 
-This project is available on Maven Central. To add it to your project simply add the following dependencies to your
-`pom.xml`:
+This project is available on Maven Central. To add it to your project simply add the following dependencies to your POM:
 
     <dependency>
-      <groupId>com.smarchive.dropwizard</groupId>
+      <groupId>net.gini.dropwizard</groupId>
       <artifactId>dropwizard-gelf</artifactId>
-      <version>0.1</version>
+      <version>0.3.0-SNAPSHOT</version>
     </dependency>
-
-
-Acknowledgements
-----------------
-
-Thanks to Nick Telford for his [initial version](https://gist.github.com/dd5e000c3327484540a8) of the GraylogBundle.
-
-
-License
--------
-
-Copyright (c) 2012 smarchive GmbH
-
-This library is licensed under the Apache License, Version 2.0.
-
-See http://www.apache.org/licenses/LICENSE-2.0.html or the LICENSE file in this repository for the full license text.
 
 
 Support
 -------
 
-Please log tickets and issues at our [project site](https://github.com/smarchive/dropwizard-gelf/issues).
+Please file bug reports and feature requests in [GitHub issues](https://github.com/gini/dropwizard-gelf/issues).
+
+
+Acknowledgements
+----------------
+
+Thanks to Nick Telford for his [initial version](https://gist.github.com/dd5e000c3327484540a8) of the `GraylogBundle`.
+
+
+License
+-------
+
+Copyright (c) 2012 smarchive GmbH, 2013 Gini GmbH
+
+This library is licensed under the Apache License, Version 2.0.
+
+See http://www.apache.org/licenses/LICENSE-2.0.html or the LICENSE file in this repository for the full license text.
