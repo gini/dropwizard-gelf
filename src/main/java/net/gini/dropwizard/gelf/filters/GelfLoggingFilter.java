@@ -81,25 +81,19 @@ public class GelfLoggingFilter implements Filter {
      */
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-
-        final Stopwatch stopwatch = new Stopwatch();
-
         // It's quite safe to assume that we only receive HTTP requests
         final HttpServletRequest httpRequest = (HttpServletRequest) request;
         final HttpServletResponse httpResponse = (HttpServletResponse) response;
+
+        final StringBuilder buf = new StringBuilder(256);
 
         String address = httpRequest.getHeader(HttpHeaders.X_FORWARDED_FOR);
         if (address == null) {
             address = request.getRemoteAddr();
         }
 
-        MDC.put("remoteAddress", address);
-        MDC.put("httpMethod", httpRequest.getMethod());
-        MDC.put("protocol", httpRequest.getProtocol());
-        MDC.put("requestUri", httpRequest.getRequestURI());
-        MDC.put("requestLength", String.valueOf(httpRequest.getContentLength()));
-        MDC.put("requestContentType", httpRequest.getContentType());
-        MDC.put("requestEncoding", httpRequest.getCharacterEncoding());
+        buf.append(address);
+        buf.append(" - ");
 
         final String userAgent = httpRequest.getHeader(HttpHeaders.USER_AGENT);
         if (userAgent != null) {
@@ -110,21 +104,43 @@ public class GelfLoggingFilter implements Filter {
         if (authType != null) {
             MDC.put("requestAuth", authType);
             MDC.put("userPrincipal", httpRequest.getUserPrincipal().getName());
+            buf.append(httpRequest.getUserPrincipal().getName());
+        } else {
+            buf.append("-");
         }
+        buf.append(" \"");
+        buf.append(httpRequest.getMethod());
+        buf.append(' ');
+        buf.append(httpRequest.getRequestURI());
+        buf.append(' ');
+        buf.append(request.getProtocol());
+        buf.append("\" ");
 
         final CountingHttpServletResponseWrapper responseWrapper = new CountingHttpServletResponseWrapper(httpResponse);
 
+        final Stopwatch stopwatch = new Stopwatch();
         stopwatch.start();
         chain.doFilter(request, responseWrapper);
         stopwatch.stop();
 
-        MDC.put("responseStatus", String.valueOf(httpResponse.getStatus()));
-        MDC.put("responseContentType", httpResponse.getContentType());
-        MDC.put("responseEncoding", httpResponse.getCharacterEncoding());
+        buf.append(responseWrapper.getStatus());
+        buf.append(" ");
+        buf.append(responseWrapper.getCount());
+
+        MDC.put("remoteAddress", address);
+        MDC.put("httpMethod", httpRequest.getMethod());
+        MDC.put("protocol", httpRequest.getProtocol());
+        MDC.put("requestUri", httpRequest.getRequestURI());
+        MDC.put("requestLength", String.valueOf(httpRequest.getContentLength()));
+        MDC.put("requestContentType", httpRequest.getContentType());
+        MDC.put("requestEncoding", httpRequest.getCharacterEncoding());
+        MDC.put("responseStatus", String.valueOf(responseWrapper.getStatus()));
+        MDC.put("responseContentType", responseWrapper.getContentType());
+        MDC.put("responseEncoding", responseWrapper.getCharacterEncoding());
         MDC.put("responseTimeNanos", String.valueOf(stopwatch.elapsed(TimeUnit.NANOSECONDS)));
         MDC.put("responseLength", String.valueOf(responseWrapper.getCount()));
 
-        LOG.info("{} {} {}", httpRequest.getMethod(), httpRequest.getRequestURI(), httpRequest.getProtocol());
+        LOG.info(buf.toString());
 
         // This should be safe since the request has been processed completely
         MDC.clear();

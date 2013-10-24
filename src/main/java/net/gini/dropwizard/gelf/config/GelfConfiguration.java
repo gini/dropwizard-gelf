@@ -9,14 +9,19 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
+import java.util.TimeZone;
 
 /**
  * Configuration class for settings related to {@link net.gini.dropwizard.gelf.bundles.GelfLoggingBundle}.
  */
 public class GelfConfiguration {
+    static final TimeZone UTC = TimeZone.getTimeZone("UTC");
 
     @JsonProperty
     private boolean enabled = false;
+
+    @JsonProperty
+    private boolean requestLogEnabled = false;
 
     @NotNull
     @JsonProperty
@@ -70,12 +75,28 @@ public class GelfConfiguration {
     @JsonProperty
     private boolean useMarker = false;
 
+    @JsonProperty
+    @NotNull
+    private TimeZone timeZone = UTC;
+
     public boolean isEnabled() {
         return enabled;
     }
 
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public boolean isRequestLogEnabled() {
+        return requestLogEnabled;
+    }
+
     public Level getThreshold() {
         return threshold;
+    }
+
+    public void setThreshold(Level threshold) {
+        this.threshold = threshold;
     }
 
     public String getFacility() {
@@ -86,8 +107,16 @@ public class GelfConfiguration {
         return host;
     }
 
+    public void setHost(String host) {
+        this.host = host;
+    }
+
     public int getPort() {
         return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
     }
 
     public boolean isUseLoggerName() {
@@ -126,7 +155,19 @@ public class GelfConfiguration {
         return includeFullMDC;
     }
 
+    public void setIncludeFullMDC(boolean includeFullMDC) {
+        this.includeFullMDC = includeFullMDC;
+    }
+
     public boolean isUseMarker() {
         return useMarker;
+    }
+
+    public TimeZone getTimeZone() {
+        return timeZone;
+    }
+
+    public void setTimeZone(TimeZone timeZone) {
+        this.timeZone = timeZone;
     }
 }

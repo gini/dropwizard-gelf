@@ -1,19 +1,16 @@
 package net.gini.dropwizard.gelf.bundles;
 
-import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.filter.ThresholdFilter;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.Appender;
-import ch.qos.logback.core.spi.FilterAttachable;
-import net.gini.dropwizard.gelf.config.GelfConfiguration;
 import com.yammer.dropwizard.ConfiguredBundle;
 import com.yammer.dropwizard.config.Bootstrap;
 import com.yammer.dropwizard.config.Configuration;
 import com.yammer.dropwizard.config.Environment;
 import com.yammer.dropwizard.logging.AsyncAppender;
 import me.moocar.logbackgelf.GelfAppender;
+import net.gini.dropwizard.gelf.config.GelfConfiguration;
+import net.gini.dropwizard.gelf.filters.GelfLoggingFilter;
+import net.gini.dropwizard.gelf.logging.LogbackFactory;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -30,56 +27,23 @@ public abstract class GelfLoggingBundle<T extends Configuration> implements Conf
     @Override
     public void run(T configuration, Environment environment) throws Exception {
 
-        final GelfConfiguration config = getConfiguration(configuration);
+        final GelfConfiguration gelf = getConfiguration(configuration);
 
-        if (config.isEnabled()) {
-            Logger root = (Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
-            root.addAppender(AsyncAppender.wrap(buildGelfAppender(config, root.getLoggerContext())));
+        if (gelf.isEnabled()) {
+            final Logger root = (Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
+            root.addAppender(AsyncAppender.wrap(LogbackFactory.buildGelfAppender(gelf, root.getLoggerContext())));
+
+            if (gelf.isRequestLogEnabled()) {
+                final Logger logger = (Logger) LoggerFactory.getLogger(GelfLoggingFilter.class);
+                logger.setAdditive(false);
+
+                final LoggerContext context = logger.getLoggerContext();
+                final GelfAppender appender = LogbackFactory.buildGelfAppender(gelf, context, gelf.getFacility() + "-requests");
+                logger.addAppender(appender);
+
+                environment.addFilter(new GelfLoggingFilter(), "/*");
+            }
         }
-    }
-
-    /**
-     * Build the {@link GelfAppender} from the supplied {@link GelfConfiguration}.
-     *
-     * @param configuration The configuration for the {@link GelfAppender}
-     * @param context       The logger context
-     * @return A fully configured and started {@link Appender}
-     */
-    private Appender<ILoggingEvent> buildGelfAppender(GelfConfiguration configuration, LoggerContext context) {
-
-        final GelfAppender appender = new GelfAppender();
-
-        appender.setContext(context);
-        appender.setFacility(configuration.getFacility());
-        appender.setGraylog2ServerHost(configuration.getHost());
-        appender.setGraylog2ServerPort(configuration.getPort());
-        appender.setGraylog2ServerVersion(configuration.getServerVersion());
-        appender.setMessagePattern(configuration.getMessagePattern());
-        appender.setShortMessagePattern(configuration.getShortMessagePattern());
-        appender.setUseLoggerName(configuration.isUseLoggerName());
-        appender.setUseThreadName(configuration.isUseThreadName());
-        appender.setChunkThreshold(configuration.getChunkThreshold());
-        appender.setAdditionalFields(configuration.getAdditionalFields());
-        appender.setStaticAdditionalFields(configuration.getStaticFields());
-        appender.setIncludeFullMDC(configuration.isIncludeFullMDC());
-        appender.setUseMarker(configuration.isUseMarker());
-        addThresholdFilter(appender, configuration.getThreshold());
-        appender.start();
-
-        return appender;
-    }
-
-    /**
-     * Add a {@link ThresholdFilter} to the supplied appender.
-     *
-     * @param appender  The appender to add the filter to
-     * @param threshold The filter threshold
-     */
-    private static void addThresholdFilter(FilterAttachable<ILoggingEvent> appender, Level threshold) {
-        final ThresholdFilter filter = new ThresholdFilter();
-        filter.setLevel(threshold.toString());
-        filter.start();
-        appender.addFilter(filter);
     }
 
     /**
