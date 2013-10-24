@@ -55,6 +55,7 @@ public abstract class GelfLoggingBundle<T extends Configuration> implements Conf
         appender.setGraylog2ServerPort(configuration.getPort());
         appender.setGraylog2ServerVersion(configuration.getServerVersion());
         appender.setMessagePattern(configuration.getMessagePattern());
+        appender.setShortMessagePattern(configuration.getShortMessagePattern());
         appender.setUseLoggerName(configuration.isUseLoggerName());
         appender.setUseThreadName(configuration.isUseThreadName());
         appender.setChunkThreshold(configuration.getChunkThreshold());

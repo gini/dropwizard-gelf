@@ -54,6 +54,9 @@ public class GelfConfiguration {
     private String messagePattern = "%m%rEx";
 
     @JsonProperty
+    private String shortMessagePattern = null;
+
+    @JsonProperty
     @NotNull
     private ImmutableMap<String, String> additionalFields = ImmutableMap.of();
 
@@ -105,6 +108,10 @@ public class GelfConfiguration {
 
     public String getMessagePattern() {
         return messagePattern;
+    }
+
+    public String getShortMessagePattern() {
+        return shortMessagePattern;
     }
 
     public ImmutableMap<String, String> getAdditionalFields() {
