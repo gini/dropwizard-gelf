@@ -129,6 +129,20 @@ Additional MDC entries populated by `GelfLoggingFilter`:
 * **responseLength**: The length of the HTTP response
 
 
+Logging startup errors to Graylog2
+----------------------------------
+
+In order to log startup errors (i. e. before the `GelfLoggingBundle` has been properly initialized) to a Graylog2-compatible server,
+the Dropwizard service has to run `GelfBootstrap.bootstrap()` in its `main` method and set a custom `UncaughtExceptionHandler` for the
+main thread.
+
+    public static void main(String[] args) throws Exception {
+        GelfBootstrap.bootstrap(NAME, GELF_HOST, GELF_PORT, false);
+        Thread.currentThread().setUncaughtExceptionHandler(UncaughtExceptionHandlers.systemExit());
+        new MyService().run(args);
+    }
+
+
 Drawbacks
 ---------
 
