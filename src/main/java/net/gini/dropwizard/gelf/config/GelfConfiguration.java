@@ -37,7 +37,7 @@ public class GelfConfiguration {
 
     @JsonProperty
     @NotEmpty
-    private String sendingHostName;
+    private String hostName;
 
     @JsonProperty
     @Min(1)
@@ -115,14 +115,14 @@ public class GelfConfiguration {
         this.host = host;
     }
 
-    public String getSendingHostName()
+    public String getHostName()
     {
-        return sendingHostName;
+        return hostName;
     }
 
-    public void setSendingHostName(final String sendingHostName)
+    public void setHostName(final String hostName)
     {
-        this.sendingHostName = sendingHostName;
+        this.hostName = hostName;
     }
 
     public int getPort() {
