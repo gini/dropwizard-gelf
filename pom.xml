@@ -73,7 +73,7 @@
         <dependency>
             <groupId>me.moocar</groupId>
             <artifactId>logback-gelf</artifactId>
-            <version>0.10p2-SNAPSHOT</version>
+            <version>0.10p2</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
