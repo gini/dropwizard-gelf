@@ -1,6 +1,13 @@
 Dropwizard GELF Changelog
 =========================
 
+0.4.0
+-----
+
+* Add configuration setting 'hostname' to override the hostname in GELF messages
+* Upgrade to logback-gelf 0.10p2
+
+
 0.3.0
 -----
 
