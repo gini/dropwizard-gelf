@@ -78,32 +78,32 @@ Your YAML configuration could include the following snippet to configure the `Ge
 Properties
 ----------
 
-*   **enabled**: Specify if logging to a GELF-compatible server should be enabled. Defaults to false;
-*   **facility**: The name of your service. Appears in facility column in the Graylog2 web interface. Defaults to "GELF";
-*   **host**: The hostname of the Graylog2 server to send messages to. Defaults to "localhost";
-*   **port**: The port of the Graylog2 server to send messages to. Defaults to 12201;
-*   **useLoggerName**: If true, an additional field call "_loggerName" will be added to each GELF message. Its contents
+* **enabled**: Specify if logging to a GELF-compatible server should be enabled. Defaults to false;
+* **facility**: The name of your service. Appears in facility column in the Graylog2 web interface. Defaults to "GELF";
+* **host**: The hostname of the Graylog2 server to send messages to. Defaults to "localhost";
+* **port**: The port of the Graylog2 server to send messages to. Defaults to 12201;
+* **useLoggerName**: If true, an additional field call "_loggerName" will be added to each GELF message. Its contents
 will be the fully qualified name of the logger. e.g: com.company.Thingo. Defaults to true;
 *   **useThreadName**: If true, an additional field call "_threadName" will be added to each GELF message. Its contents
 will be the name of the thread. Defaults to true;
-*   **serverVersion**: Specify which version the graylog2-server is. This is important because the GELF headers
+* **serverVersion**: Specify which version the graylog2-server is. This is important because the GELF headers
 changed from 0.9.5 -> 0.9.6. Allowed values = 0.9.5 and 0.9.6. Defaults to "0.9.6";
-*   **chunkThreshold**: The maximum number of bytes allowed by the payload before the message should be chunked into
+* **chunkThreshold**: The maximum number of bytes allowed by the payload before the message should be chunked into
 smaller packets. Defaults to 1000;
-*   **useMarker**: If true, and the user has used an [SLF4J marker](http://slf4j.org/api/org/slf4j/Marker.html) in their
+* **useMarker**: If true, and the user has used an [SLF4J marker](http://slf4j.org/api/org/slf4j/Marker.html) in their
 log message by using one of the marker-overloaded [log methods](http://slf4j.org/api/org/slf4j/Logger.html), then the
 `marker.toString()` will be added to the GELF message as the field `_marker`.  Defaults to false;
-*   **messagePattern**: The layout of the actual message according to
+* **messagePattern**: The layout of the actual message according to
 [PatternLayout](http://logback.qos.ch/manual/layouts.html#conversionWord). Defaults to "%m%rEx";
-*   **shortMessagePattern**: The layout of the short message according to
+* **shortMessagePattern**: The layout of the short message according to
 [PatternLayout](http://logback.qos.ch/manual/layouts.html#conversionWord). Defaults to none which means the message will
 be truncated to create the short message;
-*   **hostName** The sending host name. Used to override the name of the server which will appear in the log messages.
+* **hostName** The sending host name. Used to override the name of the server which will appear in the log messages.
 Defaults to the output of 'hostname'.
-*   **includeFullMDC**: Add all fields from the MDC will be added to the GELF message. If set to false, only the keys
+* **includeFullMDC**: Add all fields from the MDC will be added to the GELF message. If set to false, only the keys
 listed in additionalFields will be added to a GELF message. Defaults to false;
-*   **additionalFields**: Add additional fields filled from the [MDC](http://logback.qos.ch/manual/mdc.html).  Defaults to empty;
-*   **staticAdditionalFields**: Add static additional fields. Defaults to empty;
+* **additionalFields**: Add additional fields filled from the [MDC](http://logback.qos.ch/manual/mdc.html).  Defaults to empty;
+* **staticAdditionalFields**: Add static additional fields. Defaults to empty;
 
 
 Logging Jetty requests with GelfLoggingFilter
@@ -167,7 +167,7 @@ This project is available on Maven Central. To add it to your project simply add
     <dependency>
       <groupId>net.gini.dropwizard</groupId>
       <artifactId>dropwizard-gelf</artifactId>
-      <version>0.3.0</version>
+      <version>0.4.0</version>
     </dependency>
 
 
@@ -183,10 +183,16 @@ Acknowledgements
 Thanks to Nick Telford for his [initial version](https://gist.github.com/dd5e000c3327484540a8) of the `GraylogBundle`.
 
 
+Contributors
+------------
+
+* Daniel Scott (https://github.com/danieljamesscott)
+
+
 License
 -------
 
-Copyright (c) 2012 smarchive GmbH, 2013 Gini GmbH
+Copyright (c) 2012-2013 smarchive GmbH, 2013-2014 Gini GmbH
 
 This library is licensed under the Apache License, Version 2.0.
 
