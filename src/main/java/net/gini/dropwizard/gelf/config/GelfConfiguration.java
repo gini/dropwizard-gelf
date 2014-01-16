@@ -36,6 +36,10 @@ public class GelfConfiguration {
     private String host = "localhost";
 
     @JsonProperty
+    @NotEmpty
+    private String hostName;
+
+    @JsonProperty
     @Min(1)
     @Max(65535)
     private int port = 12201;
@@ -109,6 +113,16 @@ public class GelfConfiguration {
 
     public void setHost(String host) {
         this.host = host;
+    }
+
+    public String getHostName()
+    {
+        return hostName;
+    }
+
+    public void setHostName(final String hostName)
+    {
+        this.hostName = hostName;
     }
 
     public int getPort() {

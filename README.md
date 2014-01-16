@@ -63,6 +63,7 @@ Your YAML configuration could include the following snippet to configure the `Ge
       # chunkThreshold: 1000
       # messagePattern: %m%rEx
       # shortMessagePattern: %.-100(%m%rEx)
+      # hostName: hostname
       includeFullMDC: true
       additionalFields:
         remoteAddress: _remoteAddress
@@ -97,6 +98,8 @@ log message by using one of the marker-overloaded [log methods](http://slf4j.org
 *   **shortMessagePattern**: The layout of the short message according to
 [PatternLayout](http://logback.qos.ch/manual/layouts.html#conversionWord). Defaults to none which means the message will
 be truncated to create the short message;
+*   **hostName** The sending host name. Used to override the name of the server which will appear in the log messages.
+Defaults to the output of 'hostname'.
 *   **includeFullMDC**: Add all fields from the MDC will be added to the GELF message. If set to false, only the keys
 listed in additionalFields will be added to a GELF message. Defaults to false;
 *   **additionalFields**: Add additional fields filled from the [MDC](http://logback.qos.ch/manual/mdc.html).  Defaults to empty;

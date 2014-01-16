@@ -36,6 +36,7 @@ public final class LogbackFactory {
         appender.setGraylog2ServerHost(gelf.getHost());
         appender.setGraylog2ServerPort(gelf.getPort());
         appender.setGraylog2ServerVersion(gelf.getServerVersion());
+        appender.setHostName(gelf.getHostName());
         appender.setMessagePattern(gelf.getMessagePattern());
         appender.setShortMessagePattern(gelf.getShortMessagePattern());
         appender.setUseLoggerName(gelf.isUseLoggerName());
