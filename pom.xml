@@ -198,6 +198,7 @@
                 <configuration>
                     <path>${project.version}</path>
                     <message>Creating site for ${project.version}</message>
+                    <merge>true</merge>
                 </configuration>
                 <executions>
                     <execution>
