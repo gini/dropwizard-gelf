@@ -2,7 +2,9 @@ package net.gini.dropwizard.gelf.config;
 
 import ch.qos.logback.classic.Level;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
+import com.yammer.dropwizard.validation.PortRange;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.validation.constraints.Max;
@@ -36,13 +38,12 @@ public class GelfConfiguration {
     private String host = "localhost";
 
     @JsonProperty
-    @NotEmpty
-    private String hostName;
+    @PortRange(min = 1)
+    private int port = 12201;
 
     @JsonProperty
-    @Min(1)
-    @Max(65535)
-    private int port = 12201;
+    @NotNull
+    private Optional<String> hostName = Optional.absent();
 
     @JsonProperty
     private boolean useLoggerName = true;
@@ -115,12 +116,11 @@ public class GelfConfiguration {
         this.host = host;
     }
 
-    public String getHostName()
-    {
+    public Optional<String> getHostName() {
         return hostName;
     }
 
-    public void setHostName(final String hostName)
+    public void setHostName(final Optional<String> hostName)
     {
         this.hostName = hostName;
     }

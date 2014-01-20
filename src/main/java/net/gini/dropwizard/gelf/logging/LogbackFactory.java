@@ -36,7 +36,6 @@ public final class LogbackFactory {
         appender.setGraylog2ServerHost(gelf.getHost());
         appender.setGraylog2ServerPort(gelf.getPort());
         appender.setGraylog2ServerVersion(gelf.getServerVersion());
-        appender.setHostName(gelf.getHostName());
         appender.setMessagePattern(gelf.getMessagePattern());
         appender.setShortMessagePattern(gelf.getShortMessagePattern());
         appender.setUseLoggerName(gelf.isUseLoggerName());
@@ -46,6 +45,10 @@ public final class LogbackFactory {
         appender.setStaticAdditionalFields(gelf.getStaticFields());
         appender.setIncludeFullMDC(gelf.isIncludeFullMDC());
         appender.setUseMarker(gelf.isUseMarker());
+
+        if(gelf.getHostName().isPresent()) {
+            appender.setHostName(gelf.getHostName().get());
+        }
 
         addThresholdFilter(appender, gelf.getThreshold());
         appender.start();
