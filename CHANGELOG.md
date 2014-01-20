@@ -1,6 +1,12 @@
 Dropwizard GELF Changelog
 =========================
 
+0.4.1
+-----
+
+* Fix regression: Make configuration setting 'hostName' optional
+
+
 0.4.0
 -----
 
