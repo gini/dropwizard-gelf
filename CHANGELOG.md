@@ -1,6 +1,15 @@
 Dropwizard GELF Changelog
 =========================
 
+0.5.0
+-----
+
+* Upgrade to Java 7
+* Upgrade to Dropwizard 0.7.0 (thanks to [Michal Svab](https://github.com/msvab))
+* Properly clean up MDC in GelfLoggingFilter instead of purging the complete contents
+* GelfLoggingFilter should also clean up and log if chain.doFilter() throws an exception
+
+
 0.4.1
 -----
 
