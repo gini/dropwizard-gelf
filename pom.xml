@@ -35,7 +35,6 @@
         <developerConnection>scm:git:git@github.com:gini/dropwizard-gelf.git</developerConnection>
         <connection>scm:git:github.com/gini/dropwizard-gelf.git</connection>
         <url>https://github.com/gini/dropwizard-gelf</url>
-        <tag>HEAD</tag>
     </scm>
 
     <ciManagement>
@@ -47,6 +46,13 @@
         <url>https://github.com/gini/dropwizard-gelf/issues</url>
         <system>GitHub Issues</system>
     </issueManagement>
+
+    <distributionManagement>
+        <site>
+            <id>dropwizard-gelf</id>
+            <url>http://gini.github.io/dropwizard-gelf/${project.version}</url>
+        </site>
+    </distributionManagement>
 
     <developers>
         <developer>
