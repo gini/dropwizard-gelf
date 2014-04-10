@@ -1,6 +1,13 @@
 Dropwizard GELF Changelog
 =========================
 
+0.4.2
+-----
+
+* Properly clean up MDC in GelfLoggingFilter instead of purging the complete contents
+* GelfLoggingFilter should also clean up and log if chain.doFilter() throws an exception
+
+
 0.4.1
 -----
 
