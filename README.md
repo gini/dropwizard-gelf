@@ -167,7 +167,7 @@ This project is available on Maven Central. To add it to your project simply add
     <dependency>
       <groupId>net.gini.dropwizard</groupId>
       <artifactId>dropwizard-gelf</artifactId>
-      <version>0.4.1</version>
+      <version>0.5.0</version>
     </dependency>
 
 
@@ -186,7 +186,8 @@ Thanks to Nick Telford for his [initial version](https://gist.github.com/dd5e000
 Contributors
 ------------
 
-* Daniel Scott (https://github.com/danieljamesscott)
+* [Daniel Scott](https://github.com/danieljamesscott)
+* [Michal Svab](https://github.com/msvab)
 
 
 License
