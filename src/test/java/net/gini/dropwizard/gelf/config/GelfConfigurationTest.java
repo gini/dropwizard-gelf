@@ -1,11 +1,12 @@
 package net.gini.dropwizard.gelf.config;
 
 import com.google.common.base.Optional;
-import com.yammer.dropwizard.config.ConfigurationException;
-import com.yammer.dropwizard.config.ConfigurationFactory;
-import com.yammer.dropwizard.validation.Validator;
+import io.dropwizard.configuration.ConfigurationException;
+import io.dropwizard.configuration.ConfigurationFactory;
+import io.dropwizard.jackson.Jackson;
 import org.junit.Test;
 
+import javax.validation.Validation;
 import java.io.IOException;
 import java.util.TimeZone;
 
@@ -20,7 +21,7 @@ public class GelfConfigurationTest {
 
     @Test
     public void hasValidDefaults() throws IOException, ConfigurationException {
-        final GelfConfiguration config = ConfigurationFactory.forClass(GelfConfiguration.class, new Validator()).build();
+        final GelfConfiguration config = new ConfigurationFactory<GelfConfiguration>(GelfConfiguration.class, Validation.buildDefaultValidatorFactory().getValidator(), Jackson.newObjectMapper(), "").build();
 
         assertThat("disabled by default", config.isEnabled(), is(false));
         assertThat("request log is disabled by default", config.isRequestLogEnabled(), is(false));

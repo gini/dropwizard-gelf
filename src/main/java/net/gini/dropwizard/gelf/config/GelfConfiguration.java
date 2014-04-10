@@ -4,10 +4,9 @@ import ch.qos.logback.classic.Level;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
-import com.yammer.dropwizard.validation.PortRange;
+import io.dropwizard.validation.PortRange;
 import org.hibernate.validator.constraints.NotEmpty;
 
-import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;

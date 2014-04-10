@@ -2,11 +2,12 @@ package net.gini.dropwizard.gelf.bundles;
 
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
-import com.yammer.dropwizard.ConfiguredBundle;
-import com.yammer.dropwizard.config.Bootstrap;
-import com.yammer.dropwizard.config.Configuration;
-import com.yammer.dropwizard.config.Environment;
-import com.yammer.dropwizard.logging.AsyncAppender;
+import io.dropwizard.Configuration;
+import io.dropwizard.ConfiguredBundle;
+import io.dropwizard.logging.AsyncAppender;
+import io.dropwizard.setup.Bootstrap;
+import io.dropwizard.setup.Environment;
+import io.dropwizard.util.Duration;
 import me.moocar.logbackgelf.GelfAppender;
 import net.gini.dropwizard.gelf.config.GelfConfiguration;
 import net.gini.dropwizard.gelf.filters.GelfLoggingFilter;
@@ -31,7 +32,7 @@ public abstract class GelfLoggingBundle<T extends Configuration> implements Conf
 
         if (gelf.isEnabled()) {
             final Logger root = (Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
-            root.addAppender(AsyncAppender.wrap(LogbackFactory.buildGelfAppender(gelf, root.getLoggerContext())));
+            root.addAppender(new AsyncAppender(LogbackFactory.buildGelfAppender(gelf, root.getLoggerContext()), 128, Duration.milliseconds(100), false));
 
             if (gelf.isRequestLogEnabled()) {
                 final Logger logger = (Logger) LoggerFactory.getLogger(GelfLoggingFilter.class);
@@ -41,7 +42,7 @@ public abstract class GelfLoggingBundle<T extends Configuration> implements Conf
                 final GelfAppender appender = LogbackFactory.buildGelfAppender(gelf, context, gelf.getFacility() + "-requests");
                 logger.addAppender(appender);
 
-                environment.addFilter(new GelfLoggingFilter(), "/*");
+                environment.servlets().addFilter("gelf", new GelfLoggingFilter());
             }
         }
     }

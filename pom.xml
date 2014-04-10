@@ -60,13 +60,13 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <dropwizard.version>0.6.2</dropwizard.version>
+        <dropwizard.version>0.7.0</dropwizard.version>
         <github.global.server>github</github.global.server>
     </properties>
 
     <dependencies>
         <dependency>
-            <groupId>com.yammer.dropwizard</groupId>
+            <groupId>io.dropwizard</groupId>
             <artifactId>dropwizard-core</artifactId>
             <version>${dropwizard.version}</version>
         </dependency>
@@ -74,6 +74,12 @@
             <groupId>me.moocar</groupId>
             <artifactId>logback-gelf</artifactId>
             <version>0.10p2</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>logback-classic</artifactId>
+                    <groupId>ch.qos.logback</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
