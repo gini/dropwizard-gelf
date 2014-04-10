@@ -14,7 +14,7 @@
 
     <groupId>net.gini.dropwizard</groupId>
     <artifactId>dropwizard-gelf</artifactId>
-    <version>0.4.2-SNAPSHOT</version>
+    <version>0.4.2</version>
     <packaging>jar</packaging>
 
     <name>Dropwizard GELF Bundle</name>
