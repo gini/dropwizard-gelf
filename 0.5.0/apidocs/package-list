@@ -1,0 +1,4 @@
+net.gini.dropwizard.gelf.bundles
+net.gini.dropwizard.gelf.config
+net.gini.dropwizard.gelf.filters
+net.gini.dropwizard.gelf.logging
