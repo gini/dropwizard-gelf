@@ -115,40 +115,43 @@ public class GelfLoggingFilter implements Filter {
 
         final Stopwatch stopwatch = new Stopwatch();
         stopwatch.start();
-        chain.doFilter(request, responseWrapper);
-        stopwatch.stop();
 
-        buf.append(responseWrapper.getStatus());
-        buf.append(" ");
-        buf.append(responseWrapper.getCount());
+        try {
+            chain.doFilter(request, responseWrapper);
+        } finally {
+            stopwatch.stop();
 
-        final String userAgent = httpRequest.getHeader(HttpHeaders.USER_AGENT);
-        if (userAgent != null) {
-            MDC.put(AdditionalKeys.USER_AGENT, userAgent);
+            buf.append(responseWrapper.getStatus());
+            buf.append(" ");
+            buf.append(responseWrapper.getCount());
+
+            final String userAgent = httpRequest.getHeader(HttpHeaders.USER_AGENT);
+            if (userAgent != null) {
+                MDC.put(AdditionalKeys.USER_AGENT, userAgent);
+            }
+
+            if (authType != null) {
+                MDC.put(AdditionalKeys.REQ_AUTH, authType);
+                MDC.put(AdditionalKeys.PRINCIPAL, httpRequest.getUserPrincipal().getName());
+            }
+
+            MDC.put(AdditionalKeys.REMOTE_ADDRESS, clientAddress);
+            MDC.put(AdditionalKeys.HTTP_METHOD, httpRequest.getMethod());
+            MDC.put(AdditionalKeys.PROTCOL, httpRequest.getProtocol());
+            MDC.put(AdditionalKeys.REQ_URI, httpRequest.getRequestURI());
+            MDC.put(AdditionalKeys.REQ_LENGTH, String.valueOf(httpRequest.getContentLength()));
+            MDC.put(AdditionalKeys.REQ_CONTENT_TYPE, httpRequest.getContentType());
+            MDC.put(AdditionalKeys.REQ_ENCODING, httpRequest.getCharacterEncoding());
+            MDC.put(AdditionalKeys.REQ_STATUS, String.valueOf(responseWrapper.getStatus()));
+            MDC.put(AdditionalKeys.RESP_CONTENT_TYPE, responseWrapper.getContentType());
+            MDC.put(AdditionalKeys.RESP_ENCODING, responseWrapper.getCharacterEncoding());
+            MDC.put(AdditionalKeys.RESP_TIME, String.valueOf(stopwatch.elapsed(TimeUnit.NANOSECONDS)));
+            MDC.put(AdditionalKeys.RESP_LENGTH, String.valueOf(responseWrapper.getCount()));
+
+            LOG.info(buf.toString());
+
+            clearMDC();
         }
-
-        if (authType != null) {
-            MDC.put(AdditionalKeys.REQ_AUTH, authType);
-            MDC.put(AdditionalKeys.PRINCIPAL, httpRequest.getUserPrincipal().getName());
-        }
-
-        MDC.put(AdditionalKeys.REMOTE_ADDRESS, clientAddress);
-        MDC.put(AdditionalKeys.HTTP_METHOD, httpRequest.getMethod());
-        MDC.put(AdditionalKeys.PROTCOL, httpRequest.getProtocol());
-        MDC.put(AdditionalKeys.REQ_URI, httpRequest.getRequestURI());
-        MDC.put(AdditionalKeys.REQ_LENGTH, String.valueOf(httpRequest.getContentLength()));
-        MDC.put(AdditionalKeys.REQ_CONTENT_TYPE, httpRequest.getContentType());
-        MDC.put(AdditionalKeys.REQ_ENCODING, httpRequest.getCharacterEncoding());
-        MDC.put(AdditionalKeys.REQ_STATUS, String.valueOf(responseWrapper.getStatus()));
-        MDC.put(AdditionalKeys.RESP_CONTENT_TYPE, responseWrapper.getContentType());
-        MDC.put(AdditionalKeys.RESP_ENCODING, responseWrapper.getCharacterEncoding());
-        MDC.put(AdditionalKeys.RESP_TIME, String.valueOf(stopwatch.elapsed(TimeUnit.NANOSECONDS)));
-        MDC.put(AdditionalKeys.RESP_LENGTH, String.valueOf(responseWrapper.getCount()));
-
-        LOG.info(buf.toString());
-
-        // This should be safe since the request has been processed completely
-        clearMDC();
     }
 
     /**
