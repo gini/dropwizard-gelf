@@ -1,11 +1,16 @@
 package net.gini.dropwizard.gelf.filters;
 
+import com.google.common.base.Optional;
 import com.google.common.base.Stopwatch;
 import com.google.common.io.CountingOutputStream;
 import com.google.common.net.HttpHeaders;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
+
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -17,8 +22,6 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
-import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 /**
  * A {@link Filter} which logs requests and adds some data about it to the logger's {@link MDC}.
@@ -80,30 +83,22 @@ public class GelfLoggingFilter implements Filter {
      * </ol>
      */
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+    public void doFilter(final ServletRequest request, final ServletResponse response, final FilterChain chain)
+            throws IOException, ServletException {
         // It's quite safe to assume that we only receive HTTP requests
         final HttpServletRequest httpRequest = (HttpServletRequest) request;
         final HttpServletResponse httpResponse = (HttpServletResponse) response;
 
         final StringBuilder buf = new StringBuilder(256);
 
-        String address = httpRequest.getHeader(HttpHeaders.X_FORWARDED_FOR);
-        if (address == null) {
-            address = request.getRemoteAddr();
-        }
+        final Optional<String> address = Optional.fromNullable(httpRequest.getHeader(HttpHeaders.X_FORWARDED_FOR));
+        final String clientAddress = address.or(request.getRemoteAddr());
 
-        buf.append(address);
+        buf.append(clientAddress);
         buf.append(" - ");
-
-        final String userAgent = httpRequest.getHeader(HttpHeaders.USER_AGENT);
-        if (userAgent != null) {
-            MDC.put("userAgent", userAgent);
-        }
 
         final String authType = httpRequest.getAuthType();
         if (authType != null) {
-            MDC.put("requestAuth", authType);
-            MDC.put("userPrincipal", httpRequest.getUserPrincipal().getName());
             buf.append(httpRequest.getUserPrincipal().getName());
         } else {
             buf.append("-");
@@ -127,23 +122,33 @@ public class GelfLoggingFilter implements Filter {
         buf.append(" ");
         buf.append(responseWrapper.getCount());
 
-        MDC.put("remoteAddress", address);
-        MDC.put("httpMethod", httpRequest.getMethod());
-        MDC.put("protocol", httpRequest.getProtocol());
-        MDC.put("requestUri", httpRequest.getRequestURI());
-        MDC.put("requestLength", String.valueOf(httpRequest.getContentLength()));
-        MDC.put("requestContentType", httpRequest.getContentType());
-        MDC.put("requestEncoding", httpRequest.getCharacterEncoding());
-        MDC.put("responseStatus", String.valueOf(responseWrapper.getStatus()));
-        MDC.put("responseContentType", responseWrapper.getContentType());
-        MDC.put("responseEncoding", responseWrapper.getCharacterEncoding());
-        MDC.put("responseTimeNanos", String.valueOf(stopwatch.elapsed(TimeUnit.NANOSECONDS)));
-        MDC.put("responseLength", String.valueOf(responseWrapper.getCount()));
+        final String userAgent = httpRequest.getHeader(HttpHeaders.USER_AGENT);
+        if (userAgent != null) {
+            MDC.put(AdditionalKeys.USER_AGENT, userAgent);
+        }
+
+        if (authType != null) {
+            MDC.put(AdditionalKeys.REQ_AUTH, authType);
+            MDC.put(AdditionalKeys.PRINCIPAL, httpRequest.getUserPrincipal().getName());
+        }
+
+        MDC.put(AdditionalKeys.REMOTE_ADDRESS, clientAddress);
+        MDC.put(AdditionalKeys.HTTP_METHOD, httpRequest.getMethod());
+        MDC.put(AdditionalKeys.PROTCOL, httpRequest.getProtocol());
+        MDC.put(AdditionalKeys.REQ_URI, httpRequest.getRequestURI());
+        MDC.put(AdditionalKeys.REQ_LENGTH, String.valueOf(httpRequest.getContentLength()));
+        MDC.put(AdditionalKeys.REQ_CONTENT_TYPE, httpRequest.getContentType());
+        MDC.put(AdditionalKeys.REQ_ENCODING, httpRequest.getCharacterEncoding());
+        MDC.put(AdditionalKeys.REQ_STATUS, String.valueOf(responseWrapper.getStatus()));
+        MDC.put(AdditionalKeys.RESP_CONTENT_TYPE, responseWrapper.getContentType());
+        MDC.put(AdditionalKeys.RESP_ENCODING, responseWrapper.getCharacterEncoding());
+        MDC.put(AdditionalKeys.RESP_TIME, String.valueOf(stopwatch.elapsed(TimeUnit.NANOSECONDS)));
+        MDC.put(AdditionalKeys.RESP_LENGTH, String.valueOf(responseWrapper.getCount()));
 
         LOG.info(buf.toString());
 
         // This should be safe since the request has been processed completely
-        MDC.clear();
+        clearMDC();
     }
 
     /**
@@ -163,6 +168,24 @@ public class GelfLoggingFilter implements Filter {
     @Override
     public void destroy() {
         // Do nothing
+    }
+
+    private void clearMDC() {
+        MDC.remove(AdditionalKeys.USER_AGENT);
+        MDC.remove(AdditionalKeys.REQ_AUTH);
+        MDC.remove(AdditionalKeys.PRINCIPAL);
+        MDC.remove(AdditionalKeys.REMOTE_ADDRESS);
+        MDC.remove(AdditionalKeys.HTTP_METHOD);
+        MDC.remove(AdditionalKeys.PROTCOL);
+        MDC.remove(AdditionalKeys.REQ_URI);
+        MDC.remove(AdditionalKeys.REQ_LENGTH);
+        MDC.remove(AdditionalKeys.REQ_CONTENT_TYPE);
+        MDC.remove(AdditionalKeys.REQ_ENCODING);
+        MDC.remove(AdditionalKeys.REQ_STATUS);
+        MDC.remove(AdditionalKeys.RESP_CONTENT_TYPE);
+        MDC.remove(AdditionalKeys.RESP_ENCODING);
+        MDC.remove(AdditionalKeys.RESP_TIME);
+        MDC.remove(AdditionalKeys.RESP_LENGTH);
     }
 
     /**
@@ -255,5 +278,24 @@ public class GelfLoggingFilter implements Filter {
             super.reset();
             outputStream = null;
         }
+    }
+
+    private final class AdditionalKeys {
+
+        public static final String USER_AGENT = "userAgent";
+        public static final String REQ_AUTH = "requestAuth";
+        public static final String PRINCIPAL = "userPrincipal";
+        public static final String REMOTE_ADDRESS = "remoteAddress";
+        public static final String HTTP_METHOD = "httpMethod";
+        public static final String PROTCOL = "protocol";
+        public static final String REQ_URI = "requestUri";
+        public static final String REQ_LENGTH = "requestLength";
+        public static final String REQ_CONTENT_TYPE = "requestContentType";
+        public static final String REQ_ENCODING = "requestEncoding";
+        public static final String REQ_STATUS = "responseStatus";
+        public static final String RESP_CONTENT_TYPE = "responseContentType";
+        public static final String RESP_ENCODING = "responseEncoding";
+        public static final String RESP_TIME = "responseTimeNanos";
+        public static final String RESP_LENGTH = "responseLength";
     }
 }
