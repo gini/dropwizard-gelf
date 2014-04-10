@@ -118,7 +118,7 @@ public class GelfLoggingFilter implements Filter {
 
         final CountingHttpServletResponseWrapper responseWrapper = new CountingHttpServletResponseWrapper(httpResponse);
 
-        final Stopwatch stopwatch = new Stopwatch();
+        final Stopwatch stopwatch = Stopwatch.createUnstarted();
         stopwatch.start();
         chain.doFilter(request, responseWrapper);
         stopwatch.stop();
