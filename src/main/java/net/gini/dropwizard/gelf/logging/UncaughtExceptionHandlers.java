@@ -43,6 +43,9 @@ public final class UncaughtExceptionHandlers {
         @Override
         public void uncaughtException(Thread t, Throwable e) {
             LOGGER.error(String.format("Caught an exception in %s.  Shutting down.", t), e);
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ie) {}
             runtime.exit(1);
         }
     }
