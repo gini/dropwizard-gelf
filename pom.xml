@@ -68,6 +68,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <dropwizard.version>0.7.0</dropwizard.version>
         <github.global.server>github</github.global.server>
+        <findbugs.skip>false</findbugs.skip>
     </properties>
 
     <dependencies>
@@ -103,6 +104,15 @@
             </activation>
             <properties>
                 <javadoc.doclint.none>-Xdoclint:none</javadoc.doclint.none>
+            </properties>
+        </profile>
+        <profile>
+            <id>java8-disable-maven-findbugs-plugin</id>
+            <activation>
+                <jdk>[1.8,)</jdk>
+            </activation>
+            <properties>
+                <findbugs.skip>true</findbugs.skip>
             </properties>
         </profile>
     </profiles>
@@ -203,7 +213,7 @@
                         <plugin>
                             <groupId>org.codehaus.mojo</groupId>
                             <artifactId>findbugs-maven-plugin</artifactId>
-                            <version>2.5.2</version>
+                            <version>2.5.3</version>
                         </plugin>
                         <plugin>
                             <groupId>org.apache.maven.plugins</groupId>
