@@ -24,7 +24,7 @@ public class GelfAppenderFactoryTest {
         assertThat("default Graylog2 port is 12201", factory.getPort(), is(12201));
         assertThat("default hostname is absent", factory.getHostName(), is(Optional.<String>absent()));
         assertThat("default server version is 0.9.6", factory.getServerVersion(), is("0.9.6"));
-        assertThat("default facility is GELF", factory.getFacility(), is("GELF"));
+        assertThat("default facility is absent", factory.getFacility().isPresent(), is(false));
         assertThat("default chunk threshold is 1000", factory.getChunkThreshold(), is(1000));
         assertThat("default message pattern is %m%rEx", factory.getMessagePattern(), is("%m%rEx"));
         assertThat("default short message pattern is unset", factory.getShortMessagePattern(), nullValue());
@@ -40,9 +40,9 @@ public class GelfAppenderFactoryTest {
     @Test
     public void buildGelfAppenderShouldWorkWithValidConfiguration() {
         final GelfAppenderFactory gelf = new GelfAppenderFactory();
-        final String facility = "facility";
+        final String applicationName = "applicationName";
 
-        Appender appender = gelf.build(new LoggerContext(), facility, null);
+        Appender appender = gelf.build(new LoggerContext(), applicationName, null);
 
         assertThat(appender, instanceOf(AsyncAppender.class));
     }

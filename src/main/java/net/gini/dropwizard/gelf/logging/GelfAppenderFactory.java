@@ -23,13 +23,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
 @JsonTypeName("gelf")
 public class GelfAppenderFactory extends AbstractAppenderFactory {
 
-    @NotNull
     @JsonProperty
+    @NotNull
     private Level threshold = Level.ALL;
 
     @JsonProperty
-    @NotEmpty
-    private String facility = "GELF";
+    @NotNull
+    private Optional<String> facility = Optional.absent();
 
     @JsonProperty
     @NotEmpty
@@ -86,11 +86,11 @@ public class GelfAppenderFactory extends AbstractAppenderFactory {
         this.threshold = threshold;
     }
 
-    public String getFacility() {
+    public Optional<String> getFacility() {
         return facility;
     }
 
-    public void setFacility(String facility) {
+    public void setFacility(Optional<String> facility) {
         this.facility = facility;
     }
 
@@ -201,12 +201,11 @@ public class GelfAppenderFactory extends AbstractAppenderFactory {
     @Override
     public Appender<ILoggingEvent> build(LoggerContext context, String applicationName, Layout<ILoggingEvent> layout) {
         checkNotNull(context);
-        checkNotNull(facility);
 
-        GelfAppender appender = new GelfAppender();
+        final GelfAppender appender = new GelfAppender();
 
         appender.setContext(context);
-        appender.setFacility(facility);
+        appender.setFacility(facility.or(applicationName));
         appender.setGraylog2ServerHost(host);
         appender.setGraylog2ServerPort(port);
         appender.setGraylog2ServerVersion(serverVersion);
