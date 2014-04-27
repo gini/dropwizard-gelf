@@ -1,28 +1,27 @@
-package net.gini.dropwizard.gelf.config;
+package net.gini.dropwizard.gelf.logging;
 
 import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.Appender;
+import ch.qos.logback.core.Layout;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
+import io.dropwizard.logging.AbstractAppenderFactory;
 import io.dropwizard.validation.PortRange;
+import me.moocar.logbackgelf.GelfAppender;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
-import java.util.TimeZone;
 
-/**
- * Configuration class for settings related to {@link net.gini.dropwizard.gelf.bundles.GelfLoggingBundle}.
- */
-public class GelfConfiguration {
-    static final TimeZone UTC = TimeZone.getTimeZone("UTC");
+import static com.google.common.base.Preconditions.checkNotNull;
 
-    @JsonProperty
-    private boolean enabled = false;
-
-    @JsonProperty
-    private boolean requestLogEnabled = false;
+@JsonTypeName("gelf")
+public class GelfAppenderFactory extends AbstractAppenderFactory {
 
     @NotNull
     @JsonProperty
@@ -79,22 +78,6 @@ public class GelfConfiguration {
     @JsonProperty
     private boolean useMarker = false;
 
-    @JsonProperty
-    @NotNull
-    private TimeZone timeZone = UTC;
-
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    public boolean isRequestLogEnabled() {
-        return requestLogEnabled;
-    }
-
     public Level getThreshold() {
         return threshold;
     }
@@ -107,21 +90,16 @@ public class GelfConfiguration {
         return facility;
     }
 
+    public void setFacility(String facility) {
+        this.facility = facility;
+    }
+
     public String getHost() {
         return host;
     }
 
     public void setHost(String host) {
         this.host = host;
-    }
-
-    public Optional<String> getHostName() {
-        return hostName;
-    }
-
-    public void setHostName(final Optional<String> hostName)
-    {
-        this.hostName = hostName;
     }
 
     public int getPort() {
@@ -132,36 +110,76 @@ public class GelfConfiguration {
         this.port = port;
     }
 
+    public Optional<String> getHostName() {
+        return hostName;
+    }
+
+    public void setHostName(Optional<String> hostName) {
+        this.hostName = hostName;
+    }
+
     public boolean isUseLoggerName() {
         return useLoggerName;
+    }
+
+    public void setUseLoggerName(boolean useLoggerName) {
+        this.useLoggerName = useLoggerName;
     }
 
     public boolean isUseThreadName() {
         return useThreadName;
     }
 
+    public void setUseThreadName(boolean useThreadName) {
+        this.useThreadName = useThreadName;
+    }
+
     public String getServerVersion() {
         return serverVersion;
+    }
+
+    public void setServerVersion(String serverVersion) {
+        this.serverVersion = serverVersion;
     }
 
     public int getChunkThreshold() {
         return chunkThreshold;
     }
 
+    public void setChunkThreshold(int chunkThreshold) {
+        this.chunkThreshold = chunkThreshold;
+    }
+
     public String getMessagePattern() {
         return messagePattern;
+    }
+
+    public void setMessagePattern(String messagePattern) {
+        this.messagePattern = messagePattern;
     }
 
     public String getShortMessagePattern() {
         return shortMessagePattern;
     }
 
+    public void setShortMessagePattern(String shortMessagePattern) {
+        this.shortMessagePattern = shortMessagePattern;
+    }
+
     public ImmutableMap<String, String> getAdditionalFields() {
         return additionalFields;
     }
 
+    public void setAdditionalFields(ImmutableMap<String, String> additionalFields) {
+        this.additionalFields = additionalFields;
+    }
+
     public ImmutableMap<String, String> getStaticFields() {
         return staticFields;
+    }
+
+    public void setStaticFields(ImmutableMap<String, String> staticFields) {
+        this.staticFields = staticFields;
     }
 
     public boolean isIncludeFullMDC() {
@@ -176,11 +194,39 @@ public class GelfConfiguration {
         return useMarker;
     }
 
-    public TimeZone getTimeZone() {
-        return timeZone;
+    public void setUseMarker(boolean useMarker) {
+        this.useMarker = useMarker;
     }
 
-    public void setTimeZone(TimeZone timeZone) {
-        this.timeZone = timeZone;
+    @Override
+    public Appender<ILoggingEvent> build(LoggerContext context, String applicationName, Layout<ILoggingEvent> layout) {
+        checkNotNull(context);
+        checkNotNull(facility);
+
+        GelfAppender appender = new GelfAppender();
+
+        appender.setContext(context);
+        appender.setFacility(facility);
+        appender.setGraylog2ServerHost(host);
+        appender.setGraylog2ServerPort(port);
+        appender.setGraylog2ServerVersion(serverVersion);
+        appender.setMessagePattern(messagePattern);
+        appender.setShortMessagePattern(shortMessagePattern);
+        appender.setUseLoggerName(useLoggerName);
+        appender.setUseThreadName(useThreadName);
+        appender.setChunkThreshold(chunkThreshold);
+        appender.setAdditionalFields(additionalFields);
+        appender.setStaticAdditionalFields(staticFields);
+        appender.setIncludeFullMDC(includeFullMDC);
+        appender.setUseMarker(useMarker);
+
+        if(hostName.isPresent()) {
+            appender.setHostName(hostName.get());
+        }
+
+        addThresholdFilter(appender, threshold);
+        appender.start();
+
+        return wrapAsync(appender);
     }
 }

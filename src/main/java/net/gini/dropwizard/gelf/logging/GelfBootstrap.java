@@ -3,10 +3,7 @@ package net.gini.dropwizard.gelf.logging;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import com.google.common.base.Optional;
-import net.gini.dropwizard.gelf.config.GelfConfiguration;
 import org.slf4j.LoggerFactory;
-
-import java.util.TimeZone;
 
 /**
  * A class adding a configured {@link me.moocar.logbackgelf.GelfAppender} to the root logger.
@@ -37,10 +34,8 @@ public final class GelfBootstrap {
      */
     public static void bootstrap(final String name, String host, int port, Optional<String> hostName, boolean cleanRootLogger) {
         // initially configure for WARN+ GELF logging
-        final GelfConfiguration gelf = new GelfConfiguration();
-        gelf.setEnabled(true);
+        final GelfAppenderFactory gelf = new GelfAppenderFactory();
         gelf.setIncludeFullMDC(true);
-        gelf.setTimeZone(TimeZone.getDefault());
         gelf.setThreshold(Level.WARN);
         gelf.setHost(host);
         gelf.setPort(port);
@@ -52,6 +47,6 @@ public final class GelfBootstrap {
             root.detachAndStopAllAppenders();
         }
 
-        root.addAppender(LogbackFactory.buildGelfAppender(gelf, root.getLoggerContext(), name));
+        root.addAppender(gelf.build(root.getLoggerContext(), name, null));
     }
 }
