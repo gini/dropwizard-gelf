@@ -1,6 +1,13 @@
 Dropwizard GELF Changelog
 =========================
 
+0.6.0
+-----
+
+* Finalize migration to Dropwizard 0.7.x (thanks again to [Michal Svab](https://github.com/msvab))
+* Use application name as default for 'facility' configuration setting.
+
+
 0.5.0
 -----
 
