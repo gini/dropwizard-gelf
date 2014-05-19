@@ -30,6 +30,7 @@ public class GelfAppenderFactoryTest {
         assertThat("default short message pattern is unset", factory.getShortMessagePattern(), nullValue());
         assertThat("default additional fields are empty", factory.getAdditionalFields().isEmpty(), is(true));
         assertThat("default static additional fields are empty", factory.getStaticFields().isEmpty(), is(true));
+        assertThat("default field types are empty", factory.getFieldTypes().isEmpty(), is(true));
     }
 
     @Test(expected = NullPointerException.class)
