@@ -1,6 +1,13 @@
 Dropwizard GELF Changelog
 =========================
 
+0.7.0
+-----
+
+* Upgrade to logback-gelf 0.11
+* Add configuration setting 'fieldTypes' to specify types of additional fields
+
+
 0.6.0
 -----
 
