@@ -57,6 +57,8 @@ Your YAML configuration could include the following snippet to configure the `Ge
           userName: _userName
         staticAdditionalField:
           _node_name:www013
+        fieldTypes:
+          _request_id:long
 
 
 Properties
@@ -77,6 +79,7 @@ Properties
 * **includeFullMDC**: Add all fields from the MDC will be added to the GELF message. If set to false, only the keys listed in additionalFields will be added to a GELF message. Defaults to false;
 * **additionalFields**: Add additional fields filled from the [MDC](http://logback.qos.ch/manual/mdc.html). The key is the key of the MDC, the value is the key inside the GELF message. Defaults to empty;
 * **staticAdditionalFields**: Add static additional fields. Defaults to empty;
+* **fieldTypes**: Add type information to additional fields. Valid types:`int`, `long`, `float`, `double`. Defaults to `string`;
 
 
 Maven Artifacts
@@ -87,7 +90,7 @@ This project is available on Maven Central. To add it to your project simply add
     <dependency>
       <groupId>net.gini.dropwizard</groupId>
       <artifactId>dropwizard-gelf</artifactId>
-      <version>0.6.0</version>
+      <version>0.7.0</version>
       <!-- Make the Maven Enforcer plugin happy. -->
       <exclusions>
         <exclusion>
