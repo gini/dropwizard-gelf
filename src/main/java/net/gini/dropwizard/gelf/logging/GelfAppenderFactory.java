@@ -73,6 +73,10 @@ public class GelfAppenderFactory extends AbstractAppenderFactory {
     private ImmutableMap<String, String> staticFields = ImmutableMap.of();
 
     @JsonProperty
+    @NotNull
+    private ImmutableMap<String, String> fieldTypes = ImmutableMap.of();
+
+    @JsonProperty
     private boolean includeFullMDC = false;
 
     @JsonProperty
@@ -182,6 +186,14 @@ public class GelfAppenderFactory extends AbstractAppenderFactory {
         this.staticFields = staticFields;
     }
 
+    public ImmutableMap<String, String> getFieldTypes() {
+        return fieldTypes;
+    }
+
+    public void setFieldTypes(ImmutableMap<String, String> fieldTypes) {
+        this.fieldTypes = fieldTypes;
+    }
+
     public boolean isIncludeFullMDC() {
         return includeFullMDC;
     }
@@ -216,6 +228,7 @@ public class GelfAppenderFactory extends AbstractAppenderFactory {
         appender.setChunkThreshold(chunkThreshold);
         appender.setAdditionalFields(additionalFields);
         appender.setStaticAdditionalFields(staticFields);
+        appender.setFieldTypes(fieldTypes);
         appender.setIncludeFullMDC(includeFullMDC);
         appender.setUseMarker(useMarker);
 
