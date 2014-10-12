@@ -283,7 +283,7 @@ public class GelfLoggingFilter implements Filter {
         }
     }
 
-    private final class AdditionalKeys {
+    private static final class AdditionalKeys {
 
         public static final String USER_AGENT = "userAgent";
         public static final String REQ_AUTH = "requestAuth";
