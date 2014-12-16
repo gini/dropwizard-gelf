@@ -78,7 +78,7 @@
         <dependency>
             <groupId>me.moocar</groupId>
             <artifactId>logback-gelf</artifactId>
-            <version>0.11</version>
+            <version>0.12</version>
             <exclusions>
                 <exclusion>
                     <artifactId>logback-classic</artifactId>
