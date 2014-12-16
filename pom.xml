@@ -192,7 +192,7 @@
                     </reportPlugins>
                 </configuration>
             </plugin>
-            <plugin>
+            <!--plugin>
                 <groupId>com.github.github</groupId>
                 <artifactId>site-maven-plugin</artifactId>
                 <version>0.10</version>
@@ -209,7 +209,7 @@
                         <phase>site-deploy</phase>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin-->
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
