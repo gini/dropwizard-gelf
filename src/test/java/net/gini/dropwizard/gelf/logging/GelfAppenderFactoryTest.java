@@ -1,10 +1,10 @@
 package net.gini.dropwizard.gelf.logging;
 
+import ch.qos.logback.classic.AsyncAppender;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.core.Appender;
 import com.google.common.base.Optional;
 import io.dropwizard.configuration.ConfigurationException;
-import io.dropwizard.logging.AsyncAppender;
 import org.junit.Test;
 
 import java.io.IOException;
