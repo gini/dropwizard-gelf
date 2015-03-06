@@ -64,7 +64,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <dropwizard.version>0.8.0-rc2</dropwizard.version>
+        <dropwizard.version>0.8.0</dropwizard.version>
         <github.global.server>github</github.global.server>
         <findbugs.skip>false</findbugs.skip>
     </properties>
