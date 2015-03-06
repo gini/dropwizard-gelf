@@ -91,7 +91,7 @@ This project is available on Maven Central. To add it to your project simply add
     <dependency>
       <groupId>net.gini.dropwizard</groupId>
       <artifactId>dropwizard-gelf</artifactId>
-      <version>0.8.0-rc2</version>
+      <version>0.8.0-1</version>
       <!-- Make the Maven Enforcer plugin happy. -->
       <exclusions>
         <exclusion>
@@ -124,7 +124,7 @@ Contributors
 License
 -------
 
-Copyright (c) 2012-2013 smarchive GmbH, 2013-2014 Gini GmbH
+Copyright (c) 2012-2013 smarchive GmbH, 2013-2015 Gini GmbH
 
 This library is licensed under the Apache License, Version 2.0.
 
