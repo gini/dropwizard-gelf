@@ -57,9 +57,9 @@ Your YAML configuration could include the following snippet to configure the `Ge
         additionalFields:
           userName: _userName
         staticAdditionalField:
-          _node_name:www013
+          _node_name: www013
         fieldTypes:
-          _request_id:long
+          _request_id: long
 
 
 Properties
