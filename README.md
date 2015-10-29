@@ -92,7 +92,7 @@ This project is available on Maven Central. To add it to your project simply add
     <dependency>
       <groupId>net.gini.dropwizard</groupId>
       <artifactId>dropwizard-gelf</artifactId>
-      <version>0.8.0-1</version>
+      <version>0.9.0-1</version>
     </dependency>
 
 
