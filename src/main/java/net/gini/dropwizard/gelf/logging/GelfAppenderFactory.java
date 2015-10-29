@@ -13,6 +13,7 @@ import io.dropwizard.logging.AbstractAppenderFactory;
 import io.dropwizard.validation.PortRange;
 import me.moocar.logbackgelf.GelfAppender;
 import org.hibernate.validator.constraints.NotEmpty;
+import org.hibernate.validator.valuehandling.UnwrapValidatedValue;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -29,6 +30,7 @@ public class GelfAppenderFactory extends AbstractAppenderFactory {
 
     @JsonProperty
     @NotNull
+    @UnwrapValidatedValue
     private Optional<String> facility = Optional.absent();
 
     @JsonProperty
@@ -41,6 +43,7 @@ public class GelfAppenderFactory extends AbstractAppenderFactory {
 
     @JsonProperty
     @NotNull
+    @UnwrapValidatedValue
     private Optional<String> hostName = Optional.absent();
 
     @JsonProperty
