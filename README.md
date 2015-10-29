@@ -2,8 +2,9 @@ Dropwizard GELF
 ===============
 [![Build Status](https://travis-ci.org/gini/dropwizard-gelf.svg?branch=master)](https://travis-ci.org/gini/dropwizard-gelf)
 [![Coverage Status](https://img.shields.io/coveralls/gini/dropwizard-gelf.svg)](https://coveralls.io/r/gini/dropwizard-gelf)
+[![Maven Central](https://img.shields.io/maven-central/v/et.gini.dropwizard/dropwizard-gelf.svg)](http://mvnrepository.com/artifact/net.gini.dropwizard/dropwizard-gelf)
 
-Addon for Dropwizard adding support for logging to a GELF-enabled server like [Graylog2](http://graylog2.org/)
+Addon for Dropwizard adding support for logging to a GELF-enabled server like [Graylog](https://www.graylog.org/)
 or [logstash](http://logstash.net/) using the [GELF appender for Logback](https://github.com/Moocar/logback-gelf).
 
 
@@ -14,8 +15,8 @@ The Dropwizard GELF provides an `AppenderFactory` which is automatically registe
 messages directly to your configured GELF-enabled server.
 
 
-Logging startup errors to Graylog2
-----------------------------------
+Logging startup errors to Graylog
+---------------------------------
 
 In order to log startup errors (i. e. before the `GelfAppenderFactory` has been properly initialized) to a GELF-enabled
 server, the Dropwizard application has to run `GelfBootstrap.bootstrap()` in its `main` method and set a custom
@@ -66,12 +67,12 @@ Properties
 ----------
 
 * **enabled**: Specify if logging to a GELF-compatible server should be enabled. Defaults to false;
-* **facility**: The name of the application. Appears in facility column in the Graylog2 web interface. Defaults to the application name;
-* **host**: The hostname of the Graylog2 server to send messages to. Defaults to "localhost";
-* **port**: The port of the Graylog2 server to send messages to. Defaults to 12201;
+* **facility**: The name of the application. Appears in facility column in the Graylog web interface. Defaults to the application name;
+* **host**: The hostname of the Graylog server to send messages to. Defaults to "localhost";
+* **port**: The port of the Graylog server to send messages to. Defaults to 12201;
 * **useLoggerName**: If true, an additional field call "_loggerName" will be added to each GELF message. Its contents will be the fully qualified name of the logger. e. g. `com.company.Thingo`. Defaults to true;
 * **useThreadName**: If true, an additional field call "_threadName" will be added to each GELF message. Its contents will be the name of the thread. Defaults to true;
-* **serverVersion**: Specify which version the graylog2-server is. This is important because the GELF headers changed from 0.9.5 -> 0.9.6. Allowed values = 0.9.5 and 0.9.6. Defaults to "0.9.6";
+* **serverVersion**: Specify which version the Graylog server is. This is important because the GELF headers changed from 0.9.5 -> 0.9.6. Allowed values = 0.9.5 and 0.9.6. Defaults to "0.9.6";
 * **chunkThreshold**: The maximum number of bytes allowed by the payload before the message should be chunked into smaller packets. Defaults to 1000;
 * **useMarker**: If true, and the user has used an [SLF4J marker](http://slf4j.org/api/org/slf4j/Marker.html) in their log message by using one of the marker-overloaded [log methods](http://slf4j.org/api/org/slf4j/Logger.html), then the `marker.toString()` will be added to the GELF message as the field `_marker`.  Defaults to false;
 * **messagePattern**: The layout of the actual message according to [PatternLayout](http://logback.qos.ch/manual/layouts.html#conversionWord). Defaults to "%m%rEx";
@@ -92,13 +93,6 @@ This project is available on Maven Central. To add it to your project simply add
       <groupId>net.gini.dropwizard</groupId>
       <artifactId>dropwizard-gelf</artifactId>
       <version>0.8.0-1</version>
-      <!-- Make the Maven Enforcer plugin happy. -->
-      <exclusions>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-api</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
 
