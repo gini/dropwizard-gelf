@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>UncaughtExceptionHandlers.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Dropwizard GELF Bundle</a> &gt; <a href="index.source.html" class="el_package">net.gini.dropwizard.gelf.logging</a> &gt; <span class="el_source">UncaughtExceptionHandlers.java</span></div><h1>UncaughtExceptionHandlers.java</h1><pre class="source lang-java linenums">package net.gini.dropwizard.gelf.logging;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.lang.Thread.UncaughtExceptionHandler;
+
+/**
+ * Simple factory for a {@link UncaughtExceptionHandler} which logs the last uncaught exception with a SLF4J
+ * {@link Logger} on ERROR level.
+ *
+ * Copied (and modified to use SLF4J) from Google Guava.
+ */
+public final class UncaughtExceptionHandlers {
+
+<span class="nc" id="L16">    private UncaughtExceptionHandlers() {</span>
+<span class="nc" id="L17">    }</span>
+
+    /**
+     * Returns an exception handler that exits the system. This is particularly useful for the main
+     * thread, which may start up other, non-daemon threads, but fail to fully initialize the
+     * application successfully.
+     * &lt;p/&gt;
+     * &lt;p&gt;Example usage:
+     * &lt;pre&gt;public static void main(String[] args) {
+     *   Thread.currentThread().setUncaughtExceptionHandler(UncaughtExceptionHandlers.systemExit());
+     *   ...
+     * &lt;/pre&gt;
+     */
+    public static UncaughtExceptionHandler systemExit() {
+<span class="nc" id="L31">        return new Exiter(Runtime.getRuntime());</span>
+    }
+
+    private static final class Exiter implements UncaughtExceptionHandler {
+<span class="nc" id="L35">        private static final Logger LOGGER = LoggerFactory.getLogger(Exiter.class);</span>
+
+        private final Runtime runtime;
+
+<span class="nc" id="L39">        private Exiter(Runtime runtime) {</span>
+<span class="nc" id="L40">            this.runtime = runtime;</span>
+<span class="nc" id="L41">        }</span>
+
+        @Override
+        public void uncaughtException(Thread t, Throwable e) {
+<span class="nc" id="L45">            LOGGER.error(String.format(&quot;Caught an exception in %s.  Shutting down.&quot;, t), e);</span>
+<span class="nc" id="L46">            runtime.exit(1);</span>
+<span class="nc" id="L47">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

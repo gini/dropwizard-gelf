@@ -1,0 +1,9 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+Dropwizard GELF Bundle,net.gini.dropwizard.gelf.filters,GelfLoggingFilter.AdditionalKeys,3,0,0,0,1,0,1,0,1,0
+Dropwizard GELF Bundle,net.gini.dropwizard.gelf.filters,GelfLoggingFilter.CountingServletOutputStream,21,0,0,0,8,0,5,0,5,0
+Dropwizard GELF Bundle,net.gini.dropwizard.gelf.filters,GelfLoggingFilter.CountingHttpServletResponseWrapper,40,0,4,0,12,0,7,0,5,0
+Dropwizard GELF Bundle,net.gini.dropwizard.gelf.filters,GelfLoggingFilter,325,0,10,0,68,0,11,0,6,0
+Dropwizard GELF Bundle,net.gini.dropwizard.gelf.logging,UncaughtExceptionHandlers,9,0,0,0,3,0,2,0,2,0
+Dropwizard GELF Bundle,net.gini.dropwizard.gelf.logging,UncaughtExceptionHandlers.Exiter,26,0,0,0,7,0,3,0,3,0
+Dropwizard GELF Bundle,net.gini.dropwizard.gelf.logging,GelfAppenderFactory,85,168,1,1,38,54,22,13,21,13
+Dropwizard GELF Bundle,net.gini.dropwizard.gelf.logging,GelfBootstrap,46,0,2,0,14,0,4,0,3,0
