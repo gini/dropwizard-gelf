@@ -2,7 +2,7 @@ Dropwizard GELF
 ===============
 [![Build Status](https://travis-ci.org/gini/dropwizard-gelf.svg?branch=master)](https://travis-ci.org/gini/dropwizard-gelf)
 [![Coverage Status](https://img.shields.io/coveralls/gini/dropwizard-gelf.svg)](https://coveralls.io/r/gini/dropwizard-gelf)
-[![Maven Central](https://img.shields.io/maven-central/v/et.gini.dropwizard/dropwizard-gelf.svg)](http://mvnrepository.com/artifact/net.gini.dropwizard/dropwizard-gelf)
+[![Maven Central](https://img.shields.io/maven-central/v/net.gini.dropwizard/dropwizard-gelf.svg)](http://mvnrepository.com/artifact/net.gini.dropwizard/dropwizard-gelf)
 
 Addon for Dropwizard adding support for logging to a GELF-enabled server like [Graylog](https://www.graylog.org/)
 or [logstash](http://logstash.net/) using the [GELF appender for Logback](https://github.com/Moocar/logback-gelf).
