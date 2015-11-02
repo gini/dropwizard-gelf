@@ -29,8 +29,6 @@ public class GelfAppenderFactory extends AbstractAppenderFactory {
     private Level threshold = Level.ALL;
 
     @JsonProperty
-    @NotNull
-    @UnwrapValidatedValue
     private Optional<String> facility = Optional.absent();
 
     @JsonProperty
@@ -42,8 +40,6 @@ public class GelfAppenderFactory extends AbstractAppenderFactory {
     private int port = 12201;
 
     @JsonProperty
-    @NotNull
-    @UnwrapValidatedValue
     private Optional<String> hostName = Optional.absent();
 
     @JsonProperty
