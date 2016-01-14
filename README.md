@@ -24,7 +24,10 @@ server, the Dropwizard application has to run `GelfBootstrap.bootstrap()` in its
 
     public static void main(String[] args) throws Exception {
         GelfBootstrap.bootstrap(NAME, GELF_HOST, GELF_PORT, false);
-        Thread.currentThread().setUncaughtExceptionHandler(UncaughtExceptionHandlers.systemExit());
+        Thread.currentThread().setUncaughtExceptionHandler(
+                UncaughtExceptionHandlers.loggingSystemExitBuilder(NAME, GELF_HOST)
+                        .port(GELF_PORT)
+                        .build());
 
         new MyDropwizardApplication().run(args);
     }
