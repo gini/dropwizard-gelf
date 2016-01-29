@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>GelfAppenderFactory.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Dropwizard GELF Bundle</a> &gt; <a href="index.source.html" class="el_package">net.gini.dropwizard.gelf.logging</a> &gt; <span class="el_source">GelfAppenderFactory.java</span></div><h1>GelfAppenderFactory.java</h1><pre class="source lang-java linenums">package net.gini.dropwizard.gelf.logging;
+
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.Appender;
+import ch.qos.logback.core.Layout;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableMap;
+import io.dropwizard.logging.AbstractAppenderFactory;
+import io.dropwizard.validation.PortRange;
+import me.moocar.logbackgelf.GelfAppender;
+import org.hibernate.validator.constraints.NotEmpty;
+import org.hibernate.validator.valuehandling.UnwrapValidatedValue;
+
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+
+@JsonTypeName(&quot;gelf&quot;)
+<span class="fc" id="L25">public class GelfAppenderFactory extends AbstractAppenderFactory {</span>
+
+<span class="fc" id="L27">    @JsonProperty</span>
+    @NotNull
+    private Level threshold = Level.ALL;
+
+<span class="fc" id="L31">    @JsonProperty</span>
+<span class="fc" id="L32">    private Optional&lt;String&gt; facility = Optional.absent();</span>
+
+<span class="fc" id="L34">    @JsonProperty</span>
+    @NotEmpty
+    private String host = &quot;localhost&quot;;
+
+<span class="fc" id="L38">    @JsonProperty</span>
+    @PortRange(min = 1)
+    private int port = 12201;
+
+<span class="fc" id="L42">    @JsonProperty</span>
+<span class="fc" id="L43">    private Optional&lt;String&gt; hostName = Optional.absent();</span>
+
+<span class="fc" id="L45">    @JsonProperty</span>
+    private boolean useLoggerName = true;
+
+<span class="fc" id="L48">    @JsonProperty</span>
+    private boolean useThreadName = true;
+
+<span class="fc" id="L51">    @JsonProperty</span>
+    @NotEmpty
+    @Pattern(regexp = &quot;0\\.9\\.[56]&quot;)
+    private String serverVersion = &quot;0.9.6&quot;;
+
+<span class="fc" id="L56">    @JsonProperty</span>
+    @Min(0)
+    private int chunkThreshold = 1000;
+
+<span class="fc" id="L60">    @JsonProperty</span>
+    private String messagePattern = &quot;%m%rEx&quot;;
+
+<span class="fc" id="L63">    @JsonProperty</span>
+    private String shortMessagePattern = null;
+
+<span class="fc" id="L66">    @JsonProperty</span>
+    @NotNull
+<span class="fc" id="L68">    private ImmutableMap&lt;String, String&gt; additionalFields = ImmutableMap.of();</span>
+
+<span class="fc" id="L70">    @JsonProperty</span>
+    @NotNull
+<span class="fc" id="L72">    private ImmutableMap&lt;String, String&gt; staticFields = ImmutableMap.of();</span>
+
+<span class="fc" id="L74">    @JsonProperty</span>
+    @NotNull
+<span class="fc" id="L76">    private ImmutableMap&lt;String, String&gt; fieldTypes = ImmutableMap.of();</span>
+
+<span class="fc" id="L78">    @JsonProperty</span>
+    private boolean includeFullMDC = false;
+
+<span class="fc" id="L81">    @JsonProperty</span>
+    private boolean useMarker = false;
+
+    public Level getThreshold() {
+<span class="nc" id="L85">        return threshold;</span>
+    }
+
+    public void setThreshold(Level threshold) {
+<span class="nc" id="L89">        this.threshold = threshold;</span>
+<span class="nc" id="L90">    }</span>
+
+    public Optional&lt;String&gt; getFacility() {
+<span class="fc" id="L93">        return facility;</span>
+    }
+
+    public void setFacility(Optional&lt;String&gt; facility) {
+<span class="nc" id="L97">        this.facility = facility;</span>
+<span class="nc" id="L98">    }</span>
+
+    public String getHost() {
+<span class="fc" id="L101">        return host;</span>
+    }
+
+    public void setHost(String host) {
+<span class="nc" id="L105">        this.host = host;</span>
+<span class="nc" id="L106">    }</span>
+
+    public int getPort() {
+<span class="fc" id="L109">        return port;</span>
+    }
+
+    public void setPort(int port) {
+<span class="nc" id="L113">        this.port = port;</span>
+<span class="nc" id="L114">    }</span>
+
+    public Optional&lt;String&gt; getHostName() {
+<span class="fc" id="L117">        return hostName;</span>
+    }
+
+    public void setHostName(Optional&lt;String&gt; hostName) {
+<span class="nc" id="L121">        this.hostName = hostName;</span>
+<span class="nc" id="L122">    }</span>
+
+    public boolean isUseLoggerName() {
+<span class="nc" id="L125">        return useLoggerName;</span>
+    }
+
+    public void setUseLoggerName(boolean useLoggerName) {
+<span class="nc" id="L129">        this.useLoggerName = useLoggerName;</span>
+<span class="nc" id="L130">    }</span>
+
+    public boolean isUseThreadName() {
+<span class="nc" id="L133">        return useThreadName;</span>
+    }
+
+    public void setUseThreadName(boolean useThreadName) {
+<span class="nc" id="L137">        this.useThreadName = useThreadName;</span>
+<span class="nc" id="L138">    }</span>
+
+    public String getServerVersion() {
+<span class="fc" id="L141">        return serverVersion;</span>
+    }
+
+    public void setServerVersion(String serverVersion) {
+<span class="nc" id="L145">        this.serverVersion = serverVersion;</span>
+<span class="nc" id="L146">    }</span>
+
+    public int getChunkThreshold() {
+<span class="fc" id="L149">        return chunkThreshold;</span>
+    }
+
+    public void setChunkThreshold(int chunkThreshold) {
+<span class="nc" id="L153">        this.chunkThreshold = chunkThreshold;</span>
+<span class="nc" id="L154">    }</span>
+
+    public String getMessagePattern() {
+<span class="fc" id="L157">        return messagePattern;</span>
+    }
+
+    public void setMessagePattern(String messagePattern) {
+<span class="nc" id="L161">        this.messagePattern = messagePattern;</span>
+<span class="nc" id="L162">    }</span>
+
+    public String getShortMessagePattern() {
+<span class="fc" id="L165">        return shortMessagePattern;</span>
+    }
+
+    public void setShortMessagePattern(String shortMessagePattern) {
+<span class="nc" id="L169">        this.shortMessagePattern = shortMessagePattern;</span>
+<span class="nc" id="L170">    }</span>
+
+    public ImmutableMap&lt;String, String&gt; getAdditionalFields() {
+<span class="fc" id="L173">        return additionalFields;</span>
+    }
+
+    public void setAdditionalFields(ImmutableMap&lt;String, String&gt; additionalFields) {
+<span class="nc" id="L177">        this.additionalFields = additionalFields;</span>
+<span class="nc" id="L178">    }</span>
+
+    public ImmutableMap&lt;String, String&gt; getStaticFields() {
+<span class="fc" id="L181">        return staticFields;</span>
+    }
+
+    public void setStaticFields(ImmutableMap&lt;String, String&gt; staticFields) {
+<span class="nc" id="L185">        this.staticFields = staticFields;</span>
+<span class="nc" id="L186">    }</span>
+
+    public ImmutableMap&lt;String, String&gt; getFieldTypes() {
+<span class="fc" id="L189">        return fieldTypes;</span>
+    }
+
+    public void setFieldTypes(ImmutableMap&lt;String, String&gt; fieldTypes) {
+<span class="nc" id="L193">        this.fieldTypes = fieldTypes;</span>
+<span class="nc" id="L194">    }</span>
+
+    public boolean isIncludeFullMDC() {
+<span class="nc" id="L197">        return includeFullMDC;</span>
+    }
+
+    public void setIncludeFullMDC(boolean includeFullMDC) {
+<span class="nc" id="L201">        this.includeFullMDC = includeFullMDC;</span>
+<span class="nc" id="L202">    }</span>
+
+    public boolean isUseMarker() {
+<span class="nc" id="L205">        return useMarker;</span>
+    }
+
+    public void setUseMarker(boolean useMarker) {
+<span class="nc" id="L209">        this.useMarker = useMarker;</span>
+<span class="nc" id="L210">    }</span>
+
+    @Override
+    public Appender&lt;ILoggingEvent&gt; build(LoggerContext context, String applicationName, Layout&lt;ILoggingEvent&gt; layout) {
+<span class="fc" id="L214">        checkNotNull(context);</span>
+
+<span class="fc" id="L216">        final GelfAppender appender = new GelfAppender();</span>
+
+<span class="fc" id="L218">        appender.setContext(context);</span>
+<span class="fc" id="L219">        appender.setFacility(facility.or(applicationName));</span>
+<span class="fc" id="L220">        appender.setGraylog2ServerHost(host);</span>
+<span class="fc" id="L221">        appender.setGraylog2ServerPort(port);</span>
+<span class="fc" id="L222">        appender.setGraylog2ServerVersion(serverVersion);</span>
+<span class="fc" id="L223">        appender.setMessagePattern(messagePattern);</span>
+<span class="fc" id="L224">        appender.setShortMessagePattern(shortMessagePattern);</span>
+<span class="fc" id="L225">        appender.setUseLoggerName(useLoggerName);</span>
+<span class="fc" id="L226">        appender.setUseThreadName(useThreadName);</span>
+<span class="fc" id="L227">        appender.setChunkThreshold(chunkThreshold);</span>
+<span class="fc" id="L228">        appender.setAdditionalFields(additionalFields);</span>
+<span class="fc" id="L229">        appender.setStaticAdditionalFields(staticFields);</span>
+<span class="fc" id="L230">        appender.setFieldTypes(fieldTypes);</span>
+<span class="fc" id="L231">        appender.setIncludeFullMDC(includeFullMDC);</span>
+<span class="fc" id="L232">        appender.setUseMarker(useMarker);</span>
+
+<span class="pc bpc" id="L234" title="1 of 2 branches missed.">        if(hostName.isPresent()) {</span>
+<span class="nc" id="L235">            appender.setHostName(hostName.get());</span>
+        }
+
+<span class="fc" id="L238">        addThresholdFilter(appender, threshold);</span>
+<span class="fc" id="L239">        appender.start();</span>
+
+<span class="fc" id="L241">        return wrapAsync(appender);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>
