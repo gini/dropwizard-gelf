@@ -1,10 +1,31 @@
 Dropwizard GELF Changelog
 =========================
 
+0.9.2-1
+-------
+
+* Upgrade to Dropwizard 0.9.2
+* New UncaughtExceptionHandler *LoggingExiter* that logs exceptions before
+  exiting the system.
+
+
+0.9.0-2
+-------
+
+* Remove some unnecessary validations from GelfAppenderFactory
+
+
+0.9.0-1
+-------
+
+* Upgrade to Dropwizard 0.9.0
+
+
 0.8.0-1
 -------
 
 * Upgrade to Dropwizard 0.8.0
+
 
 0.7.0
 -----
