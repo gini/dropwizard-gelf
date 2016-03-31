@@ -11,13 +11,11 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import io.dropwizard.logging.AbstractAppenderFactory;
 import io.dropwizard.validation.PortRange;
-import me.moocar.logbackgelf.GelfAppender;
-import org.hibernate.validator.constraints.NotEmpty;
-import org.hibernate.validator.valuehandling.UnwrapValidatedValue;
-
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
+import me.moocar.logbackgelf.GelfAppender;
+import org.hibernate.validator.constraints.NotEmpty;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -27,6 +25,9 @@ public class GelfAppenderFactory extends AbstractAppenderFactory {
     @JsonProperty
     @NotNull
     private Level threshold = Level.ALL;
+
+    @JsonProperty
+    private boolean enabled = true;
 
     @JsonProperty
     private Optional<String> facility = Optional.absent();
@@ -209,34 +210,46 @@ public class GelfAppenderFactory extends AbstractAppenderFactory {
         this.useMarker = useMarker;
     }
 
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
     @Override
     public Appender<ILoggingEvent> build(LoggerContext context, String applicationName, Layout<ILoggingEvent> layout) {
-        checkNotNull(context);
+        if (enabled) {
+            checkNotNull(context);
+        }
 
         final GelfAppender appender = new GelfAppender();
 
-        appender.setContext(context);
-        appender.setFacility(facility.or(applicationName));
-        appender.setGraylog2ServerHost(host);
-        appender.setGraylog2ServerPort(port);
-        appender.setGraylog2ServerVersion(serverVersion);
-        appender.setMessagePattern(messagePattern);
-        appender.setShortMessagePattern(shortMessagePattern);
-        appender.setUseLoggerName(useLoggerName);
-        appender.setUseThreadName(useThreadName);
-        appender.setChunkThreshold(chunkThreshold);
-        appender.setAdditionalFields(additionalFields);
-        appender.setStaticAdditionalFields(staticFields);
-        appender.setFieldTypes(fieldTypes);
-        appender.setIncludeFullMDC(includeFullMDC);
-        appender.setUseMarker(useMarker);
+        if (enabled) {
+            appender.setContext(context);
+            appender.setFacility(facility.or(applicationName));
+            appender.setGraylog2ServerHost(host);
+            appender.setGraylog2ServerPort(port);
+            appender.setGraylog2ServerVersion(serverVersion);
+            appender.setMessagePattern(messagePattern);
+            appender.setShortMessagePattern(shortMessagePattern);
+            appender.setUseLoggerName(useLoggerName);
+            appender.setUseThreadName(useThreadName);
+            appender.setChunkThreshold(chunkThreshold);
+            appender.setAdditionalFields(additionalFields);
+            appender.setStaticAdditionalFields(staticFields);
+            appender.setFieldTypes(fieldTypes);
+            appender.setIncludeFullMDC(includeFullMDC);
+            appender.setUseMarker(useMarker);
 
-        if(hostName.isPresent()) {
-            appender.setHostName(hostName.get());
+            if (hostName.isPresent()) {
+                appender.setHostName(hostName.get());
+            }
+
+            addThresholdFilter(appender, threshold);
+            appender.start();
         }
-
-        addThresholdFilter(appender, threshold);
-        appender.start();
 
         return wrapAsync(appender);
     }
