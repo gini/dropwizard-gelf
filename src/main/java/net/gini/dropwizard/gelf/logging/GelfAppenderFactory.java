@@ -27,7 +27,6 @@ public class GelfAppenderFactory extends AbstractAppenderFactory {
     private Level threshold = Level.ALL;
 
     @JsonProperty
-    @NotNull
     private boolean enabled = true;
 
     @JsonProperty
