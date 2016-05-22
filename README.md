@@ -123,7 +123,7 @@ Contributors
 License
 -------
 
-Copyright (c) 2012-2013 smarchive GmbH, 2013-2015 Gini GmbH, 2015 Jochen Schalanda
+Copyright (c) 2012-2013 smarchive GmbH, 2013-2016 Gini GmbH, 2015-2016 Jochen Schalanda
 
 This library is licensed under the Apache License, Version 2.0.
 
