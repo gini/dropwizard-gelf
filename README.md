@@ -45,6 +45,7 @@ Your YAML configuration could include the following snippet to configure the `Ge
       - type: console
       - type: gelf
         host: localhost
+        # enabled: true
         # facility: MyApplication
         # threshold: ALL
         # host: localhost
@@ -69,7 +70,7 @@ Your YAML configuration could include the following snippet to configure the `Ge
 Properties
 ----------
 
-* **enabled**: Specify if logging to a GELF-compatible server should be enabled. Defaults to false;
+* **enabled**: Specify if logging to a GELF-compatible server should be enabled. Defaults to true;
 * **facility**: The name of the application. Appears in facility column in the Graylog web interface. Defaults to the application name;
 * **host**: The hostname of the Graylog server to send messages to. Defaults to "localhost";
 * **port**: The port of the Graylog server to send messages to. Defaults to 12201;
