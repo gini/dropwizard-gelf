@@ -9,6 +9,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
+
+import ch.qos.logback.core.helpers.NOPAppender;
 import io.dropwizard.logging.AbstractAppenderFactory;
 import io.dropwizard.validation.PortRange;
 import me.moocar.logbackgelf.GelfAppender;
@@ -23,6 +25,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 @JsonTypeName("gelf")
 public class GelfAppenderFactory extends AbstractAppenderFactory {
+
+    @JsonProperty
+    private boolean enabled = true;
 
     @JsonProperty
     @NotNull
@@ -209,9 +214,23 @@ public class GelfAppenderFactory extends AbstractAppenderFactory {
         this.useMarker = useMarker;
     }
 
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(final boolean enabled) {
+        this.enabled = enabled;
+    }
+
     @Override
     public Appender<ILoggingEvent> build(LoggerContext context, String applicationName, Layout<ILoggingEvent> layout) {
         checkNotNull(context);
+
+        if (!enabled) {
+            final Appender<ILoggingEvent> appender = new NOPAppender<>();
+            appender.start();
+            return appender;
+        }
 
         final GelfAppender appender = new GelfAppender();
 
