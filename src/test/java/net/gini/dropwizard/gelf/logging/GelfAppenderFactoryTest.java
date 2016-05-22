@@ -48,7 +48,7 @@ public class GelfAppenderFactoryTest {
     public void buildGelfAppenderShouldWorkWithValidConfiguration() {
         final GelfAppenderFactory gelf = new GelfAppenderFactory();
 
-        Appender appender = gelf.build(new LoggerContext(), APPLICATION_NAME, null);
+        final Appender<ILoggingEvent> appender = gelf.build(new LoggerContext(), APPLICATION_NAME, null);
 
         assertThat(appender, instanceOf(AsyncAppender.class));
     }
