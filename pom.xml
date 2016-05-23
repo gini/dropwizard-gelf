@@ -92,15 +92,9 @@
             <artifactId>dropwizard-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>me.moocar</groupId>
-            <artifactId>logback-gelf</artifactId>
-            <version>0.12</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>logback-classic</artifactId>
-                    <groupId>ch.qos.logback</groupId>
-                </exclusion>
-            </exclusions>
+            <groupId>biz.paluch.logging</groupId>
+            <artifactId>logstash-gelf</artifactId>
+            <version>1.8.0</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>

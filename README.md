@@ -5,7 +5,7 @@ Dropwizard GELF
 [![Maven Central](https://img.shields.io/maven-central/v/net.gini.dropwizard/dropwizard-gelf.svg)](http://mvnrepository.com/artifact/net.gini.dropwizard/dropwizard-gelf)
 
 Addon for Dropwizard adding support for logging to a GELF-enabled server like [Graylog](https://www.graylog.org/)
-or [logstash](http://logstash.net/) using the [GELF appender for Logback](https://github.com/Moocar/logback-gelf).
+or [logstash](http://logstash.net/) using [logstash-gelf](http://logging.paluch.biz/).
 
 
 Usage
@@ -37,55 +37,74 @@ Configuration
 -------------
 
 The Logback GELF appender can be configured using the provided `GelfConfiguration` class which basically mirrors the
-appender configuration outlined in [logback-gelf README](https://github.com/Moocar/logback-gelf/blob/master/README.md).
+appender configuration outlined in the [logstash-gelf documentation](http://logging.paluch.biz/examples/logback.html).
 
 Your YAML configuration could include the following snippet to configure the `GelfLoggingBundle`:
 
-    appenders:
-      - type: console
-      - type: gelf
-        host: localhost
-        # enabled: true
-        # facility: MyApplication
-        # threshold: ALL
-        # host: localhost
-        # port: 12201
-        # useLoggerName: true
-        # useThreadName: true
-        # useMarker: false
-        # serverVersion: 0.9.6
-        # chunkThreshold: 1000
-        # messagePattern: %m%rEx
-        # shortMessagePattern: %.-100(%m%rEx)
-        # hostName: hostname
-        includeFullMDC: true
-        additionalFields:
-          userName: _userName
-        staticAdditionalField:
-          _node_name: www013
-        fieldTypes:
-          _request_id: long
+```
+appenders:
+  - type: console
+  - type: gelf
+    host: graylog.example.com
+    # port: 12201
+    # facility: MyApplication
+    # threshold: ALL
+    # originHost: my-shiny-host
+    extractStackTrace: true
+    filterStackTrace: true
+    includeFullMDC: true
+    additionalFields:
+      data_center: DC01
+      rack: R5C2
+      inception_year: 2016
+    additionalFieldTypes:
+      inception_year: long
+      request_id: long
+```
 
 
-Properties
-----------
+Configuration settings
+----------------------
 
-* **enabled**: Specify if logging to a GELF-compatible server should be enabled. Defaults to true;
-* **facility**: The name of the application. Appears in facility column in the Graylog web interface. Defaults to the application name;
-* **host**: The hostname of the Graylog server to send messages to. Defaults to "localhost";
-* **port**: The port of the Graylog server to send messages to. Defaults to 12201;
-* **useLoggerName**: If true, an additional field call "_loggerName" will be added to each GELF message. Its contents will be the fully qualified name of the logger. e. g. `com.company.Thingo`. Defaults to true;
-* **useThreadName**: If true, an additional field call "_threadName" will be added to each GELF message. Its contents will be the name of the thread. Defaults to true;
-* **serverVersion**: Specify which version the Graylog server is. This is important because the GELF headers changed from 0.9.5 -> 0.9.6. Allowed values = 0.9.5 and 0.9.6. Defaults to "0.9.6";
-* **chunkThreshold**: The maximum number of bytes allowed by the payload before the message should be chunked into smaller packets. Defaults to 1000;
-* **useMarker**: If true, and the user has used an [SLF4J marker](http://slf4j.org/api/org/slf4j/Marker.html) in their log message by using one of the marker-overloaded [log methods](http://slf4j.org/api/org/slf4j/Logger.html), then the `marker.toString()` will be added to the GELF message as the field `_marker`.  Defaults to false;
-* **messagePattern**: The layout of the actual message according to [PatternLayout](http://logback.qos.ch/manual/layouts.html#conversionWord). Defaults to "%m%rEx";
-* **shortMessagePattern**: The layout of the short message according to [PatternLayout](http://logback.qos.ch/manual/layouts.html#conversionWord). Defaults to none which means the message will be truncated to create the short message;
-* **hostName** The sending host name. Used to override the name of the server which will appear in the log messages. Defaults to the output of 'hostname';
-* **includeFullMDC**: Add all fields from the MDC will be added to the GELF message. If set to false, only the keys listed in additionalFields will be added to a GELF message. Defaults to false;
-* **additionalFields**: Add additional fields filled from the [MDC](http://logback.qos.ch/manual/mdc.html). The key is the key of the MDC, the value is the key inside the GELF message. Defaults to empty;
-* **staticAdditionalFields**: Add static additional fields. Defaults to empty;
-* **fieldTypes**: Add type information to additional fields. Valid types:`int`, `long`, `float`, `double`. Defaults to `string`;
+| Setting                | Default                    | Description                                                                                                                                           |
+| ---------------------- | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `enabled`              | `true`                     | Specify if logging to a GELF-compatible server should be enabled.                                                                                     |
+| `facility`             | [application name]         | The name of the application. Appears in the `facility` column in the Graylog web interface.                                                           |
+| `host`                 | [empty]                    | Hostname/IP-Address of the GELF-compatible server, see [host specification](#host-specification).                                                     |
+| `port`                 | `12201`                    | Port of the GELF-compatible server.                                                                                                                   |
+| `originHost`           | [FQDN hostname]            | Originating hostname.                                                                                                                                 |
+| `extractStackTrace`    | `false`                    | Send the stack-trace to the StackTrace field.                                                                                                         |
+| `filterStackTrace`     | `false`                    | Perform stack-trace filtering, see [Stack Trace Filter].                                                                                              |
+| `mdcProfiling`         | `false`                    | Perform Profiling (Call-Duration) based on [MDC] Data. See [MDC Profiling] for details.                                                               |
+| `additionalFields`     | [empty]                    | Map of additional static fields.                                                                                                                      |
+| `additionalFieldTypes` | [empty]                    | Map of type specifications for additional and [MDC] fields. See [Additional field types](#additional-field-types) for details.                        |
+| `mdcFields`            | [empty]                    | List of additional fields whose values are obtained from [MDC].                                                                                       |
+| `dynamicMdcFields`     | [empty]                    | Dynamic MDC Fields allows you to extract [MDC] values based on one or more regular expressions. The name of the MDC entry is used as GELF field name. |
+| `includeFullMdc`       | `false`                    | Include all fields from the [MDC].                                                                                                                    |
+| `maximumMessageSize`   | `8192`                     | Maximum message size (in bytes). If the message size is exceeded, the appender will submit the message in multiple chunks (UDP only).                 |
+| `timestampPattern`     | `yyyy-MM-dd HH:mm:ss,SSSS` | Date/time pattern for the time field.                                                                                                                 |
+
+[MDC]: http://logback.qos.ch/manual/mdc.html
+[MDC Profiling]: http://logging.paluch.biz/mdcprofiling.html
+[Stack Trace Filter]: http://logging.paluch.biz/stack-trace-filter.html
+
+
+### Host specification
+
+* `udp:hostname` for UDP transport, e. g. `udp:127.0.0.1, `udp:some.host.com` or just `some.host.com`.
+* `tcp:hostname` for TCP transport, e. g. `tcp:127.0.0.1` or `tcp:some.host.com`. See [TCP transport for logstash-gelf] for details.
+* `redis://[:password@]hostname:port/db-number#listname` for Redis transport. See [Redis transport for logstash-gelf] for details.
+* `redis-sentinel://[:password@]hostname:port/db-number?masterId=masterId#listname` for Redis transport with Sentinel lookup. See [Redis transport for logstash-gelf] for details.
+* `http://host[:port]/[path]` for HTTP transport, e. g. `https://127.0.0.1/gelf`. See [HTTP transport for logstash-gelf] for details.
+
+[TCP transport for logstash-gelf]: http://logging.paluch.biz/tcp.html
+[Redis transport for logstash-gelf]: http://logging.paluch.biz/redis.html
+[HTTP transport for logstash-gelf]: http://logging.paluch.biz/http.html
+
+
+### Additional field types
+
+Supported types: `String`, `long`, `Long`, `double`, `Double` and `discover` (default if not specified).
 
 
 Maven Artifacts
@@ -127,4 +146,4 @@ Copyright (c) 2012-2013 smarchive GmbH, 2013-2016 Gini GmbH, 2015-2016 Jochen Sc
 
 This library is licensed under the Apache License, Version 2.0.
 
-See http://www.apache.org/licenses/LICENSE-2.0.html or the LICENSE file in this repository for the full license text.
+See http://www.apache.org/licenses/LICENSE-2.0.html or the [LICENSE](LICENSE) file in this repository for the full license text.
