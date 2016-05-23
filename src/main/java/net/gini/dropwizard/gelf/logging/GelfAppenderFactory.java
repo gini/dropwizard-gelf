@@ -1,24 +1,27 @@
 package net.gini.dropwizard.gelf.logging;
 
+import biz.paluch.logging.gelf.intern.GelfMessage;
+import biz.paluch.logging.gelf.logback.GelfLogbackAppender;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.Layout;
+import ch.qos.logback.core.helpers.NOPAppender;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-
-import ch.qos.logback.core.helpers.NOPAppender;
 import io.dropwizard.logging.AbstractAppenderFactory;
 import io.dropwizard.validation.PortRange;
-import me.moocar.logbackgelf.GelfAppender;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
+import java.util.Collection;
+import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -40,32 +43,11 @@ public class GelfAppenderFactory extends AbstractAppenderFactory {
     private String host = "localhost";
 
     @JsonProperty
-    @PortRange(min = 1)
+    @PortRange
     private int port = 12201;
 
     @JsonProperty
-    private Optional<String> hostName = Optional.absent();
-
-    @JsonProperty
-    private boolean useLoggerName = true;
-
-    @JsonProperty
-    private boolean useThreadName = true;
-
-    @JsonProperty
-    @NotEmpty
-    @Pattern(regexp = "0\\.9\\.[56]")
-    private String serverVersion = "0.9.6";
-
-    @JsonProperty
-    @Min(0)
-    private int chunkThreshold = 1000;
-
-    @JsonProperty
-    private String messagePattern = "%m%rEx";
-
-    @JsonProperty
-    private String shortMessagePattern = null;
+    private Optional<String> originHost = Optional.absent();
 
     @JsonProperty
     @NotNull
@@ -73,17 +55,35 @@ public class GelfAppenderFactory extends AbstractAppenderFactory {
 
     @JsonProperty
     @NotNull
-    private ImmutableMap<String, String> staticFields = ImmutableMap.of();
-
-    @JsonProperty
-    @NotNull
-    private ImmutableMap<String, String> fieldTypes = ImmutableMap.of();
+    private ImmutableMap<String, String> additionalFieldTypes = ImmutableMap.of();
 
     @JsonProperty
     private boolean includeFullMDC = false;
 
     @JsonProperty
-    private boolean useMarker = false;
+    @NotNull
+    private Collection<String> mdcFields = ImmutableList.of();
+
+    @JsonProperty
+    @NotNull
+    private Collection<String> dynamicMdcFields = ImmutableList.of();
+
+    @JsonProperty
+    private boolean mdcProfiling = false;
+
+    @JsonProperty
+    private boolean extractStackTrace = false;
+
+    @JsonProperty
+    private boolean filterStackTrace = false;
+
+    @JsonProperty
+    @Min(0)
+    private int maximumMessageSize = 8192;
+
+    @JsonProperty
+    @NotNull
+    private String timestampPattern = "yyyy-MM-dd HH:mm:ss,SSSS";
 
     public Level getThreshold() {
         return threshold;
@@ -117,60 +117,12 @@ public class GelfAppenderFactory extends AbstractAppenderFactory {
         this.port = port;
     }
 
-    public Optional<String> getHostName() {
-        return hostName;
+    public Optional<String> getOriginHost() {
+        return originHost;
     }
 
-    public void setHostName(Optional<String> hostName) {
-        this.hostName = hostName;
-    }
-
-    public boolean isUseLoggerName() {
-        return useLoggerName;
-    }
-
-    public void setUseLoggerName(boolean useLoggerName) {
-        this.useLoggerName = useLoggerName;
-    }
-
-    public boolean isUseThreadName() {
-        return useThreadName;
-    }
-
-    public void setUseThreadName(boolean useThreadName) {
-        this.useThreadName = useThreadName;
-    }
-
-    public String getServerVersion() {
-        return serverVersion;
-    }
-
-    public void setServerVersion(String serverVersion) {
-        this.serverVersion = serverVersion;
-    }
-
-    public int getChunkThreshold() {
-        return chunkThreshold;
-    }
-
-    public void setChunkThreshold(int chunkThreshold) {
-        this.chunkThreshold = chunkThreshold;
-    }
-
-    public String getMessagePattern() {
-        return messagePattern;
-    }
-
-    public void setMessagePattern(String messagePattern) {
-        this.messagePattern = messagePattern;
-    }
-
-    public String getShortMessagePattern() {
-        return shortMessagePattern;
-    }
-
-    public void setShortMessagePattern(String shortMessagePattern) {
-        this.shortMessagePattern = shortMessagePattern;
+    public void setOriginHost(Optional<String> originHost) {
+        this.originHost = originHost;
     }
 
     public ImmutableMap<String, String> getAdditionalFields() {
@@ -181,20 +133,12 @@ public class GelfAppenderFactory extends AbstractAppenderFactory {
         this.additionalFields = additionalFields;
     }
 
-    public ImmutableMap<String, String> getStaticFields() {
-        return staticFields;
+    public ImmutableMap<String, String> getAdditionalFieldTypes() {
+        return additionalFieldTypes;
     }
 
-    public void setStaticFields(ImmutableMap<String, String> staticFields) {
-        this.staticFields = staticFields;
-    }
-
-    public ImmutableMap<String, String> getFieldTypes() {
-        return fieldTypes;
-    }
-
-    public void setFieldTypes(ImmutableMap<String, String> fieldTypes) {
-        this.fieldTypes = fieldTypes;
+    public void setAdditionalFieldTypes(ImmutableMap<String, String> additionalFieldTypes) {
+        this.additionalFieldTypes = additionalFieldTypes;
     }
 
     public boolean isIncludeFullMDC() {
@@ -205,20 +149,68 @@ public class GelfAppenderFactory extends AbstractAppenderFactory {
         this.includeFullMDC = includeFullMDC;
     }
 
-    public boolean isUseMarker() {
-        return useMarker;
-    }
-
-    public void setUseMarker(boolean useMarker) {
-        this.useMarker = useMarker;
-    }
-
     public boolean isEnabled() {
         return enabled;
     }
 
     public void setEnabled(final boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public Collection<String> getMdcFields() {
+        return mdcFields;
+    }
+
+    public void setMdcFields(Collection<String> mdcFields) {
+        this.mdcFields = mdcFields;
+    }
+
+    public Collection<String> getDynamicMdcFields() {
+        return dynamicMdcFields;
+    }
+
+    public void setDynamicMdcFields(Collection<String> dynamicMdcFields) {
+        this.dynamicMdcFields = dynamicMdcFields;
+    }
+
+    public boolean isMdcProfiling() {
+        return mdcProfiling;
+    }
+
+    public void setMdcProfiling(boolean mdcProfiling) {
+        this.mdcProfiling = mdcProfiling;
+    }
+
+    public boolean isExtractStackTrace() {
+        return extractStackTrace;
+    }
+
+    public void setExtractStackTrace(boolean extractStackTrace) {
+        this.extractStackTrace = extractStackTrace;
+    }
+
+    public boolean isFilterStackTrace() {
+        return filterStackTrace;
+    }
+
+    public void setFilterStackTrace(boolean filterStackTrace) {
+        this.filterStackTrace = filterStackTrace;
+    }
+
+    public int getMaximumMessageSize() {
+        return maximumMessageSize;
+    }
+
+    public void setMaximumMessageSize(int maximumMessageSize) {
+        this.maximumMessageSize = maximumMessageSize;
+    }
+
+    public String getTimestampPattern() {
+        return timestampPattern;
+    }
+
+    public void setTimestampPattern(String timestampPattern) {
+        this.timestampPattern = timestampPattern;
     }
 
     @Override
@@ -231,31 +223,40 @@ public class GelfAppenderFactory extends AbstractAppenderFactory {
             return appender;
         }
 
-        final GelfAppender appender = new GelfAppender();
+        final GelfLogbackAppender appender = new GelfLogbackAppender();
 
         appender.setContext(context);
+        appender.setName("dropwizard-gelf");
         appender.setFacility(facility.or(applicationName));
-        appender.setGraylog2ServerHost(host);
-        appender.setGraylog2ServerPort(port);
-        appender.setGraylog2ServerVersion(serverVersion);
-        appender.setMessagePattern(messagePattern);
-        appender.setShortMessagePattern(shortMessagePattern);
-        appender.setUseLoggerName(useLoggerName);
-        appender.setUseThreadName(useThreadName);
-        appender.setChunkThreshold(chunkThreshold);
-        appender.setAdditionalFields(additionalFields);
-        appender.setStaticAdditionalFields(staticFields);
-        appender.setFieldTypes(fieldTypes);
-        appender.setIncludeFullMDC(includeFullMDC);
-        appender.setUseMarker(useMarker);
+        appender.setGraylogHost(host);
+        appender.setGraylogPort(port);
+        appender.setVersion(GelfMessage.GELF_VERSION_1_1);
+        appender.setAdditionalFields(buildFieldsSpec(additionalFields));
+        appender.setAdditionalFieldTypes(buildFieldsSpec(additionalFieldTypes));
+        appender.setMdcFields(buildMdcFieldsSpec(mdcFields));
+        appender.setDynamicMdcFields(buildMdcFieldsSpec(dynamicMdcFields));
+        appender.setIncludeFullMdc(true);
+        appender.setMdcProfiling(mdcProfiling);
+        appender.setExtractStackTrace(extractStackTrace);
+        appender.setFilterStackTrace(filterStackTrace);
+        appender.setMaximumMessageSize(maximumMessageSize);
+        appender.setTimestampPattern(timestampPattern);
 
-        if(hostName.isPresent()) {
-            appender.setHostName(hostName.get());
+        if (originHost.isPresent()) {
+            appender.setOriginHost(originHost.get());
         }
 
         addThresholdFilter(appender, threshold);
         appender.start();
 
         return wrapAsync(appender);
+    }
+
+    private String buildMdcFieldsSpec(@NotNull Collection<String> fields) {
+        return Joiner.on(',').skipNulls().join(fields);
+    }
+
+    private String buildFieldsSpec(@NotNull Map<String, String> fields) {
+        return Joiner.on(',').withKeyValueSeparator("=").useForNull("null").join(fields);
     }
 }

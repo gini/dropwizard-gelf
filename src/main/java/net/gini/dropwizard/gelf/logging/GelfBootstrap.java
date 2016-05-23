@@ -6,13 +6,13 @@ import com.google.common.base.Optional;
 import org.slf4j.LoggerFactory;
 
 /**
- * A class adding a configured {@link me.moocar.logbackgelf.GelfAppender} to the root logger.
+ * A class adding a configured {@link biz.paluch.logging.gelf.logback.GelfLogbackAppender} to the root logger.
  */
 public final class GelfBootstrap {
     private GelfBootstrap() { /* No instance methods */ }
 
     /**
-     * Bootstrap the SLF4J root logger with a configured {@link me.moocar.logbackgelf.GelfAppender}.
+     * Bootstrap the SLF4J root logger with a configured {@link biz.paluch.logging.gelf.logback.GelfLogbackAppender}.
      *
      * @param name            The facility to use in the GELF messages
      * @param host            The host of the Graylog2 server
@@ -24,7 +24,7 @@ public final class GelfBootstrap {
     }
 
     /**
-     * Bootstrap the SLF4J root logger with a configured {@link me.moocar.logbackgelf.GelfAppender}.
+     * Bootstrap the SLF4J root logger with a configured {@link biz.paluch.logging.gelf.logback.GelfLogbackAppender}.
      *
      * @param name            The facility to use in the GELF messages
      * @param host            The host of the Graylog2 server
@@ -39,7 +39,7 @@ public final class GelfBootstrap {
         gelf.setThreshold(Level.WARN);
         gelf.setHost(host);
         gelf.setPort(port);
-        gelf.setHostName(hostName);
+        gelf.setOriginHost(hostName);
 
         final Logger root = (Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
 
