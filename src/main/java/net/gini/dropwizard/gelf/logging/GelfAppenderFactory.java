@@ -6,15 +6,16 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
-import ch.qos.logback.core.Layout;
 import ch.qos.logback.core.helpers.NOPAppender;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.google.common.base.Joiner;
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.dropwizard.logging.AbstractAppenderFactory;
+import io.dropwizard.logging.async.AsyncAppenderFactory;
+import io.dropwizard.logging.filter.LevelFilterFactory;
+import io.dropwizard.logging.layout.LayoutFactory;
 import io.dropwizard.validation.PortRange;
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -22,11 +23,10 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.util.Collection;
 import java.util.Map;
-
-import static com.google.common.base.Preconditions.checkNotNull;
+import java.util.Optional;
 
 @JsonTypeName("gelf")
-public class GelfAppenderFactory extends AbstractAppenderFactory {
+public class GelfAppenderFactory extends AbstractAppenderFactory<ILoggingEvent> {
 
     @JsonProperty
     private boolean enabled = true;
@@ -36,7 +36,7 @@ public class GelfAppenderFactory extends AbstractAppenderFactory {
     private Level threshold = Level.ALL;
 
     @JsonProperty
-    private Optional<String> facility = Optional.absent();
+    private Optional<String> facility = Optional.empty();
 
     @JsonProperty
     @NotEmpty
@@ -47,7 +47,7 @@ public class GelfAppenderFactory extends AbstractAppenderFactory {
     private int port = 12201;
 
     @JsonProperty
-    private Optional<String> originHost = Optional.absent();
+    private Optional<String> originHost = Optional.empty();
 
     @JsonProperty
     @NotNull
@@ -214,9 +214,11 @@ public class GelfAppenderFactory extends AbstractAppenderFactory {
     }
 
     @Override
-    public Appender<ILoggingEvent> build(LoggerContext context, String applicationName, Layout<ILoggingEvent> layout) {
-        checkNotNull(context);
-
+    public Appender<ILoggingEvent> build(LoggerContext context,
+                                         String applicationName,
+                                         LayoutFactory<ILoggingEvent> layoutFactory,
+                                         LevelFilterFactory<ILoggingEvent> levelFilterFactory,
+                                         AsyncAppenderFactory<ILoggingEvent> asyncAppenderFactory) {
         if (!enabled) {
             final Appender<ILoggingEvent> appender = new NOPAppender<>();
             appender.start();
@@ -227,7 +229,7 @@ public class GelfAppenderFactory extends AbstractAppenderFactory {
 
         appender.setContext(context);
         appender.setName("dropwizard-gelf");
-        appender.setFacility(facility.or(applicationName));
+        appender.setFacility(facility.orElse(applicationName));
         appender.setGraylogHost(host);
         appender.setGraylogPort(port);
         appender.setVersion(GelfMessage.GELF_VERSION_1_1);
@@ -246,10 +248,11 @@ public class GelfAppenderFactory extends AbstractAppenderFactory {
             appender.setOriginHost(originHost.get());
         }
 
-        addThresholdFilter(appender, threshold);
+        appender.addFilter(levelFilterFactory.build(threshold));
+        getFilterFactories().stream().forEach(f -> appender.addFilter(f.build()));
         appender.start();
 
-        return wrapAsync(appender);
+        return wrapAsync(appender, asyncAppenderFactory);
     }
 
     private String buildMdcFieldsSpec(@NotNull Collection<String> fields) {

@@ -1,6 +1,5 @@
 package net.gini.dropwizard.gelf.filters;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Stopwatch;
 import com.google.common.io.CountingOutputStream;
 import com.google.common.net.HttpHeaders;
@@ -10,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import javax.servlet.Filter;
@@ -92,8 +92,8 @@ public class GelfLoggingFilter implements Filter {
 
         final StringBuilder buf = new StringBuilder(256);
 
-        final Optional<String> address = Optional.fromNullable(httpRequest.getHeader(HttpHeaders.X_FORWARDED_FOR));
-        final String clientAddress = address.or(request.getRemoteAddr());
+        final Optional<String> address = Optional.ofNullable(httpRequest.getHeader(HttpHeaders.X_FORWARDED_FOR));
+        final String clientAddress = address.orElse(request.getRemoteAddr());
 
         buf.append(clientAddress);
         buf.append(" - ");

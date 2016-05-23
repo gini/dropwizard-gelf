@@ -5,11 +5,13 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.helpers.NOPAppender;
-import com.google.common.base.Optional;
 import io.dropwizard.configuration.ConfigurationException;
+import io.dropwizard.logging.async.AsyncLoggingEventAppenderFactory;
+import io.dropwizard.logging.filter.ThresholdLevelFilterFactory;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.Optional;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.core.Is.is;
@@ -25,7 +27,7 @@ public class GelfAppenderFactoryTest {
 
         assertThat("default host is 'localhost'", factory.getHost(), is("localhost"));
         assertThat("default port is 12201", factory.getPort(), is(12201));
-        assertThat("default origin host is absent", factory.getOriginHost(), is(Optional.<String>absent()));
+        assertThat("default origin host is absent", factory.getOriginHost(), is(Optional.<String>empty()));
         assertThat("default facility is absent", factory.getFacility().isPresent(), is(false));
         assertThat("default additional fields are empty", factory.getAdditionalFields().isEmpty(), is(true));
         assertThat("default field types are empty", factory.getAdditionalFieldTypes().isEmpty(), is(true));
@@ -35,16 +37,11 @@ public class GelfAppenderFactoryTest {
         assertThat("default timestamp pattern is \"yyyy-MM-dd HH:mm:ss,SSSS\"", factory.getTimestampPattern(), is("yyyy-MM-dd HH:mm:ss,SSSS"));
     }
 
-    @Test(expected = NullPointerException.class)
-    public void buildGelfAppenderShouldFailWithNullContext() {
-        new GelfAppenderFactory().build(null, "", null);
-    }
-
     @Test
     public void buildGelfAppenderShouldWorkWithValidConfiguration() {
         final GelfAppenderFactory gelf = new GelfAppenderFactory();
 
-        final Appender<ILoggingEvent> appender = gelf.build(new LoggerContext(), APPLICATION_NAME, null);
+        final Appender<ILoggingEvent> appender = gelf.build(new LoggerContext(), APPLICATION_NAME, null, new ThresholdLevelFilterFactory(), new AsyncLoggingEventAppenderFactory());
 
         assertThat(appender, instanceOf(AsyncAppender.class));
     }
@@ -54,7 +51,7 @@ public class GelfAppenderFactoryTest {
         final GelfAppenderFactory gelf = new GelfAppenderFactory();
         gelf.setEnabled(false);
 
-        final Appender<ILoggingEvent> appender = gelf.build(new LoggerContext(), APPLICATION_NAME, null);
+        final Appender<ILoggingEvent> appender = gelf.build(new LoggerContext(), APPLICATION_NAME, null, new ThresholdLevelFilterFactory(), new AsyncLoggingEventAppenderFactory());
 
         assertThat(appender, instanceOf(NOPAppender.class));
     }
