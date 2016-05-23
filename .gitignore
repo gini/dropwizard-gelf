@@ -1,10 +1,17 @@
-.idea
-target
-atlassian-ide-plugin.xml
-logs
+# Maven
+target/
+pom.xml.versionBackup
+pom.xml.releaseBackup
+release.properties
+
+# IntelliJ IDEA
+.idea/
 *.iml
 *.ipr
-#Eclipse-specific
+
+# Eclipse
 .settings/
 .classpath
 .project
+
+logs/
