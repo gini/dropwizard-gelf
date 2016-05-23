@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>GelfAppenderFactory.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Dropwizard GELF Bundle</a> &gt; <a href="index.source.html" class="el_package">net.gini.dropwizard.gelf.logging</a> &gt; <span class="el_source">GelfAppenderFactory.java</span></div><h1>GelfAppenderFactory.java</h1><pre class="source lang-java linenums">package net.gini.dropwizard.gelf.logging;
+
+import biz.paluch.logging.gelf.intern.GelfMessage;
+import biz.paluch.logging.gelf.logback.GelfLogbackAppender;
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.Appender;
+import ch.qos.logback.core.Layout;
+import ch.qos.logback.core.helpers.NOPAppender;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.google.common.base.Joiner;
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import io.dropwizard.logging.AbstractAppenderFactory;
+import io.dropwizard.validation.PortRange;
+import org.hibernate.validator.constraints.NotEmpty;
+
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import java.util.Collection;
+import java.util.Map;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+
+@JsonTypeName(&quot;gelf&quot;)
+<span class="fc" id="L29">public class GelfAppenderFactory extends AbstractAppenderFactory {</span>
+
+<span class="fc" id="L31">    @JsonProperty</span>
+    private boolean enabled = true;
+
+<span class="fc" id="L34">    @JsonProperty</span>
+    @NotNull
+    private Level threshold = Level.ALL;
+
+<span class="fc" id="L38">    @JsonProperty</span>
+<span class="fc" id="L39">    private Optional&lt;String&gt; facility = Optional.absent();</span>
+
+<span class="fc" id="L41">    @JsonProperty</span>
+    @NotEmpty
+    private String host = &quot;localhost&quot;;
+
+<span class="fc" id="L45">    @JsonProperty</span>
+    @PortRange
+    private int port = 12201;
+
+<span class="fc" id="L49">    @JsonProperty</span>
+<span class="fc" id="L50">    private Optional&lt;String&gt; originHost = Optional.absent();</span>
+
+<span class="fc" id="L52">    @JsonProperty</span>
+    @NotNull
+<span class="fc" id="L54">    private ImmutableMap&lt;String, String&gt; additionalFields = ImmutableMap.of();</span>
+
+<span class="fc" id="L56">    @JsonProperty</span>
+    @NotNull
+<span class="fc" id="L58">    private ImmutableMap&lt;String, String&gt; additionalFieldTypes = ImmutableMap.of();</span>
+
+<span class="fc" id="L60">    @JsonProperty</span>
+    private boolean includeFullMDC = false;
+
+<span class="fc" id="L63">    @JsonProperty</span>
+    @NotNull
+<span class="fc" id="L65">    private Collection&lt;String&gt; mdcFields = ImmutableList.of();</span>
+
+<span class="fc" id="L67">    @JsonProperty</span>
+    @NotNull
+<span class="fc" id="L69">    private Collection&lt;String&gt; dynamicMdcFields = ImmutableList.of();</span>
+
+<span class="fc" id="L71">    @JsonProperty</span>
+    private boolean mdcProfiling = false;
+
+<span class="fc" id="L74">    @JsonProperty</span>
+    private boolean extractStackTrace = false;
+
+<span class="fc" id="L77">    @JsonProperty</span>
+    private boolean filterStackTrace = false;
+
+<span class="fc" id="L80">    @JsonProperty</span>
+    @Min(0)
+    private int maximumMessageSize = 8192;
+
+<span class="fc" id="L84">    @JsonProperty</span>
+    @NotNull
+    private String timestampPattern = &quot;yyyy-MM-dd HH:mm:ss,SSSS&quot;;
+
+    public Level getThreshold() {
+<span class="nc" id="L89">        return threshold;</span>
+    }
+
+    public void setThreshold(Level threshold) {
+<span class="nc" id="L93">        this.threshold = threshold;</span>
+<span class="nc" id="L94">    }</span>
+
+    public Optional&lt;String&gt; getFacility() {
+<span class="fc" id="L97">        return facility;</span>
+    }
+
+    public void setFacility(Optional&lt;String&gt; facility) {
+<span class="nc" id="L101">        this.facility = facility;</span>
+<span class="nc" id="L102">    }</span>
+
+    public String getHost() {
+<span class="fc" id="L105">        return host;</span>
+    }
+
+    public void setHost(String host) {
+<span class="nc" id="L109">        this.host = host;</span>
+<span class="nc" id="L110">    }</span>
+
+    public int getPort() {
+<span class="fc" id="L113">        return port;</span>
+    }
+
+    public void setPort(int port) {
+<span class="nc" id="L117">        this.port = port;</span>
+<span class="nc" id="L118">    }</span>
+
+    public Optional&lt;String&gt; getOriginHost() {
+<span class="fc" id="L121">        return originHost;</span>
+    }
+
+    public void setOriginHost(Optional&lt;String&gt; originHost) {
+<span class="nc" id="L125">        this.originHost = originHost;</span>
+<span class="nc" id="L126">    }</span>
+
+    public ImmutableMap&lt;String, String&gt; getAdditionalFields() {
+<span class="fc" id="L129">        return additionalFields;</span>
+    }
+
+    public void setAdditionalFields(ImmutableMap&lt;String, String&gt; additionalFields) {
+<span class="nc" id="L133">        this.additionalFields = additionalFields;</span>
+<span class="nc" id="L134">    }</span>
+
+    public ImmutableMap&lt;String, String&gt; getAdditionalFieldTypes() {
+<span class="fc" id="L137">        return additionalFieldTypes;</span>
+    }
+
+    public void setAdditionalFieldTypes(ImmutableMap&lt;String, String&gt; additionalFieldTypes) {
+<span class="nc" id="L141">        this.additionalFieldTypes = additionalFieldTypes;</span>
+<span class="nc" id="L142">    }</span>
+
+    public boolean isIncludeFullMDC() {
+<span class="nc" id="L145">        return includeFullMDC;</span>
+    }
+
+    public void setIncludeFullMDC(boolean includeFullMDC) {
+<span class="nc" id="L149">        this.includeFullMDC = includeFullMDC;</span>
+<span class="nc" id="L150">    }</span>
+
+    public boolean isEnabled() {
+<span class="nc" id="L153">        return enabled;</span>
+    }
+
+    public void setEnabled(final boolean enabled) {
+<span class="fc" id="L157">        this.enabled = enabled;</span>
+<span class="fc" id="L158">    }</span>
+
+    public Collection&lt;String&gt; getMdcFields() {
+<span class="fc" id="L161">        return mdcFields;</span>
+    }
+
+    public void setMdcFields(Collection&lt;String&gt; mdcFields) {
+<span class="nc" id="L165">        this.mdcFields = mdcFields;</span>
+<span class="nc" id="L166">    }</span>
+
+    public Collection&lt;String&gt; getDynamicMdcFields() {
+<span class="fc" id="L169">        return dynamicMdcFields;</span>
+    }
+
+    public void setDynamicMdcFields(Collection&lt;String&gt; dynamicMdcFields) {
+<span class="nc" id="L173">        this.dynamicMdcFields = dynamicMdcFields;</span>
+<span class="nc" id="L174">    }</span>
+
+    public boolean isMdcProfiling() {
+<span class="nc" id="L177">        return mdcProfiling;</span>
+    }
+
+    public void setMdcProfiling(boolean mdcProfiling) {
+<span class="nc" id="L181">        this.mdcProfiling = mdcProfiling;</span>
+<span class="nc" id="L182">    }</span>
+
+    public boolean isExtractStackTrace() {
+<span class="nc" id="L185">        return extractStackTrace;</span>
+    }
+
+    public void setExtractStackTrace(boolean extractStackTrace) {
+<span class="nc" id="L189">        this.extractStackTrace = extractStackTrace;</span>
+<span class="nc" id="L190">    }</span>
+
+    public boolean isFilterStackTrace() {
+<span class="nc" id="L193">        return filterStackTrace;</span>
+    }
+
+    public void setFilterStackTrace(boolean filterStackTrace) {
+<span class="nc" id="L197">        this.filterStackTrace = filterStackTrace;</span>
+<span class="nc" id="L198">    }</span>
+
+    public int getMaximumMessageSize() {
+<span class="fc" id="L201">        return maximumMessageSize;</span>
+    }
+
+    public void setMaximumMessageSize(int maximumMessageSize) {
+<span class="nc" id="L205">        this.maximumMessageSize = maximumMessageSize;</span>
+<span class="nc" id="L206">    }</span>
+
+    public String getTimestampPattern() {
+<span class="fc" id="L209">        return timestampPattern;</span>
+    }
+
+    public void setTimestampPattern(String timestampPattern) {
+<span class="nc" id="L213">        this.timestampPattern = timestampPattern;</span>
+<span class="nc" id="L214">    }</span>
+
+    @Override
+    public Appender&lt;ILoggingEvent&gt; build(LoggerContext context, String applicationName, Layout&lt;ILoggingEvent&gt; layout) {
+<span class="fc" id="L218">        checkNotNull(context);</span>
+
+<span class="fc bfc" id="L220" title="All 2 branches covered.">        if (!enabled) {</span>
+<span class="fc" id="L221">            final Appender&lt;ILoggingEvent&gt; appender = new NOPAppender&lt;&gt;();</span>
+<span class="fc" id="L222">            appender.start();</span>
+<span class="fc" id="L223">            return appender;</span>
+        }
+
+<span class="fc" id="L226">        final GelfLogbackAppender appender = new GelfLogbackAppender();</span>
+
+<span class="fc" id="L228">        appender.setContext(context);</span>
+<span class="fc" id="L229">        appender.setName(&quot;dropwizard-gelf&quot;);</span>
+<span class="fc" id="L230">        appender.setFacility(facility.or(applicationName));</span>
+<span class="fc" id="L231">        appender.setGraylogHost(host);</span>
+<span class="fc" id="L232">        appender.setGraylogPort(port);</span>
+<span class="fc" id="L233">        appender.setVersion(GelfMessage.GELF_VERSION_1_1);</span>
+<span class="fc" id="L234">        appender.setAdditionalFields(buildFieldsSpec(additionalFields));</span>
+<span class="fc" id="L235">        appender.setAdditionalFieldTypes(buildFieldsSpec(additionalFieldTypes));</span>
+<span class="fc" id="L236">        appender.setMdcFields(buildMdcFieldsSpec(mdcFields));</span>
+<span class="fc" id="L237">        appender.setDynamicMdcFields(buildMdcFieldsSpec(dynamicMdcFields));</span>
+<span class="fc" id="L238">        appender.setIncludeFullMdc(true);</span>
+<span class="fc" id="L239">        appender.setMdcProfiling(mdcProfiling);</span>
+<span class="fc" id="L240">        appender.setExtractStackTrace(extractStackTrace);</span>
+<span class="fc" id="L241">        appender.setFilterStackTrace(filterStackTrace);</span>
+<span class="fc" id="L242">        appender.setMaximumMessageSize(maximumMessageSize);</span>
+<span class="fc" id="L243">        appender.setTimestampPattern(timestampPattern);</span>
+
+<span class="pc bpc" id="L245" title="1 of 2 branches missed.">        if (originHost.isPresent()) {</span>
+<span class="nc" id="L246">            appender.setOriginHost(originHost.get());</span>
+        }
+
+<span class="fc" id="L249">        addThresholdFilter(appender, threshold);</span>
+<span class="fc" id="L250">        appender.start();</span>
+
+<span class="fc" id="L252">        return wrapAsync(appender);</span>
+    }
+
+    private String buildMdcFieldsSpec(@NotNull Collection&lt;String&gt; fields) {
+<span class="fc" id="L256">        return Joiner.on(',').skipNulls().join(fields);</span>
+    }
+
+    private String buildFieldsSpec(@NotNull Map&lt;String, String&gt; fields) {
+<span class="fc" id="L260">        return Joiner.on(',').withKeyValueSeparator(&quot;=&quot;).useForNull(&quot;null&quot;).join(fields);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>
