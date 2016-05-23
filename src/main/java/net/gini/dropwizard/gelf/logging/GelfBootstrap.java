@@ -2,8 +2,11 @@ package net.gini.dropwizard.gelf.logging;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
-import com.google.common.base.Optional;
+import io.dropwizard.logging.async.AsyncLoggingEventAppenderFactory;
+import io.dropwizard.logging.filter.ThresholdLevelFilterFactory;
 import org.slf4j.LoggerFactory;
+
+import java.util.Optional;
 
 /**
  * A class adding a configured {@link biz.paluch.logging.gelf.logback.GelfLogbackAppender} to the root logger.
@@ -20,7 +23,7 @@ public final class GelfBootstrap {
      * @param cleanRootLogger If true, detach and stop all other appenders from the root logger
      */
     public static void bootstrap(final String name, String host, int port, boolean cleanRootLogger) {
-        bootstrap(name, host, port, Optional.<String>absent(), cleanRootLogger);
+        bootstrap(name, host, port, Optional.empty(), cleanRootLogger);
     }
 
     /**
@@ -47,6 +50,6 @@ public final class GelfBootstrap {
             root.detachAndStopAllAppenders();
         }
 
-        root.addAppender(gelf.build(root.getLoggerContext(), name, null));
+        root.addAppender(gelf.build(root.getLoggerContext(), name, null, new ThresholdLevelFilterFactory(), new AsyncLoggingEventAppenderFactory()));
     }
 }
