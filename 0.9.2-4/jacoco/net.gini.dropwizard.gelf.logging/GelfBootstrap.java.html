@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>GelfBootstrap.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Dropwizard GELF Bundle</a> &gt; <a href="index.source.html" class="el_package">net.gini.dropwizard.gelf.logging</a> &gt; <span class="el_source">GelfBootstrap.java</span></div><h1>GelfBootstrap.java</h1><pre class="source lang-java linenums">package net.gini.dropwizard.gelf.logging;
+
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import com.google.common.base.Optional;
+import org.slf4j.LoggerFactory;
+
+/**
+ * A class adding a configured {@link biz.paluch.logging.gelf.logback.GelfLogbackAppender} to the root logger.
+ */
+public final class GelfBootstrap {
+<span class="nc" id="L12">    private GelfBootstrap() { /* No instance methods */ }</span>
+
+    /**
+     * Bootstrap the SLF4J root logger with a configured {@link biz.paluch.logging.gelf.logback.GelfLogbackAppender}.
+     *
+     * @param name            The facility to use in the GELF messages
+     * @param host            The host of the Graylog2 server
+     * @param port            The port of the Graylog2 server
+     * @param cleanRootLogger If true, detach and stop all other appenders from the root logger
+     */
+    public static void bootstrap(final String name, String host, int port, boolean cleanRootLogger) {
+<span class="nc" id="L23">        bootstrap(name, host, port, Optional.&lt;String&gt;absent(), cleanRootLogger);</span>
+<span class="nc" id="L24">    }</span>
+
+    /**
+     * Bootstrap the SLF4J root logger with a configured {@link biz.paluch.logging.gelf.logback.GelfLogbackAppender}.
+     *
+     * @param name            The facility to use in the GELF messages
+     * @param host            The host of the Graylog2 server
+     * @param port            The port of the Graylog2 server
+     * @param hostName        The (local) hostname used in GELF messages. Defaults to the local hostname.
+     * @param cleanRootLogger If true, detach and stop all other appenders from the root logger
+     */
+    public static void bootstrap(final String name, String host, int port, Optional&lt;String&gt; hostName, boolean cleanRootLogger) {
+        // initially configure for WARN+ GELF logging
+<span class="nc" id="L37">        final GelfAppenderFactory gelf = new GelfAppenderFactory();</span>
+<span class="nc" id="L38">        gelf.setIncludeFullMDC(true);</span>
+<span class="nc" id="L39">        gelf.setThreshold(Level.WARN);</span>
+<span class="nc" id="L40">        gelf.setHost(host);</span>
+<span class="nc" id="L41">        gelf.setPort(port);</span>
+<span class="nc" id="L42">        gelf.setOriginHost(hostName);</span>
+
+<span class="nc" id="L44">        final Logger root = (Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);</span>
+
+<span class="nc bnc" id="L46" title="All 2 branches missed.">        if (cleanRootLogger) {</span>
+<span class="nc" id="L47">            root.detachAndStopAllAppenders();</span>
+        }
+
+<span class="nc" id="L50">        root.addAppender(gelf.build(root.getLoggerContext(), name, null));</span>
+<span class="nc" id="L51">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>
