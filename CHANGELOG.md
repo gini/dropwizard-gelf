@@ -1,6 +1,17 @@
 Dropwizard GELF Changelog
 =========================
 
+0.9.2-4
+-------
+
+* Upgrade to logstash-gelf 1.10.0
+
+
+0.9.2-3
+-------
+
+* Upgrade to logstash-gelf 1.9.0
+
 0.9.2-2
 -------
 
