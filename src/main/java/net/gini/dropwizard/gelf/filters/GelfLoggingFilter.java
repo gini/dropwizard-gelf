@@ -1,5 +1,6 @@
 package net.gini.dropwizard.gelf.filters;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
 import com.google.common.base.Stopwatch;
 import com.google.common.io.CountingOutputStream;
@@ -12,6 +13,8 @@ import org.slf4j.MDC;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import javax.servlet.AsyncEvent;
+import javax.servlet.AsyncListener;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -120,39 +123,53 @@ public class GelfLoggingFilter implements Filter {
         try {
             chain.doFilter(request, responseWrapper);
         } finally {
-            stopwatch.stop();
-
-            buf.append(responseWrapper.getStatus());
-            buf.append(" ");
-            buf.append(responseWrapper.getCount());
-
-            final String userAgent = httpRequest.getHeader(HttpHeaders.USER_AGENT);
-            if (userAgent != null) {
-                MDC.put(AdditionalKeys.USER_AGENT, userAgent);
+            if (request.isAsyncStarted()) {
+                final AsyncListener listener =
+                        new LoggingAsyncListener(buf, stopwatch, authType, clientAddress, httpRequest,
+                                                 responseWrapper);
+                request.getAsyncContext().addListener(listener);
+            } else {
+                logRequest(buf, stopwatch, authType, clientAddress, httpRequest, responseWrapper);
             }
-
-            if (authType != null) {
-                MDC.put(AdditionalKeys.REQ_AUTH, authType);
-                MDC.put(AdditionalKeys.PRINCIPAL, httpRequest.getUserPrincipal().getName());
-            }
-
-            MDC.put(AdditionalKeys.REMOTE_ADDRESS, clientAddress);
-            MDC.put(AdditionalKeys.HTTP_METHOD, httpRequest.getMethod());
-            MDC.put(AdditionalKeys.PROTCOL, httpRequest.getProtocol());
-            MDC.put(AdditionalKeys.REQ_URI, httpRequest.getRequestURI());
-            MDC.put(AdditionalKeys.REQ_LENGTH, String.valueOf(httpRequest.getContentLength()));
-            MDC.put(AdditionalKeys.REQ_CONTENT_TYPE, httpRequest.getContentType());
-            MDC.put(AdditionalKeys.REQ_ENCODING, httpRequest.getCharacterEncoding());
-            MDC.put(AdditionalKeys.REQ_STATUS, String.valueOf(responseWrapper.getStatus()));
-            MDC.put(AdditionalKeys.RESP_CONTENT_TYPE, responseWrapper.getContentType());
-            MDC.put(AdditionalKeys.RESP_ENCODING, responseWrapper.getCharacterEncoding());
-            MDC.put(AdditionalKeys.RESP_TIME, String.valueOf(stopwatch.elapsed(TimeUnit.NANOSECONDS)));
-            MDC.put(AdditionalKeys.RESP_LENGTH, String.valueOf(responseWrapper.getCount()));
-
-            LOG.info(buf.toString());
-
-            clearMDC();
         }
+    }
+
+    private static void logRequest(final StringBuilder buf, final Stopwatch stopwatch, final String authType,
+                                   final String clientAddress,
+                                   final HttpServletRequest httpRequest,
+                                   final CountingHttpServletResponseWrapper responseWrapper) {
+        stopwatch.stop();
+
+        buf.append(responseWrapper.getStatus());
+        buf.append(" ");
+        buf.append(responseWrapper.getCount());
+
+        final String userAgent = httpRequest.getHeader(HttpHeaders.USER_AGENT);
+        if (userAgent != null) {
+            MDC.put(AdditionalKeys.USER_AGENT, userAgent);
+        }
+
+        if (authType != null) {
+            MDC.put(AdditionalKeys.REQ_AUTH, authType);
+            MDC.put(AdditionalKeys.PRINCIPAL, httpRequest.getUserPrincipal().getName());
+        }
+
+        MDC.put(AdditionalKeys.REMOTE_ADDRESS, clientAddress);
+        MDC.put(AdditionalKeys.HTTP_METHOD, httpRequest.getMethod());
+        MDC.put(AdditionalKeys.PROTOCOL, httpRequest.getProtocol());
+        MDC.put(AdditionalKeys.REQ_URI, httpRequest.getRequestURI());
+        MDC.put(AdditionalKeys.REQ_LENGTH, String.valueOf(httpRequest.getContentLength()));
+        MDC.put(AdditionalKeys.REQ_CONTENT_TYPE, httpRequest.getContentType());
+        MDC.put(AdditionalKeys.REQ_ENCODING, httpRequest.getCharacterEncoding());
+        MDC.put(AdditionalKeys.RESP_STATUS, String.valueOf(responseWrapper.getStatus()));
+        MDC.put(AdditionalKeys.RESP_CONTENT_TYPE, responseWrapper.getContentType());
+        MDC.put(AdditionalKeys.RESP_ENCODING, responseWrapper.getCharacterEncoding());
+        MDC.put(AdditionalKeys.RESP_TIME, String.valueOf(stopwatch.elapsed(TimeUnit.NANOSECONDS)));
+        MDC.put(AdditionalKeys.RESP_LENGTH, String.valueOf(responseWrapper.getCount()));
+
+        LOG.info(buf.toString());
+
+        clearMDC();
     }
 
     /**
@@ -174,18 +191,18 @@ public class GelfLoggingFilter implements Filter {
         // Do nothing
     }
 
-    private void clearMDC() {
+    private static void clearMDC() {
         MDC.remove(AdditionalKeys.USER_AGENT);
         MDC.remove(AdditionalKeys.REQ_AUTH);
         MDC.remove(AdditionalKeys.PRINCIPAL);
         MDC.remove(AdditionalKeys.REMOTE_ADDRESS);
         MDC.remove(AdditionalKeys.HTTP_METHOD);
-        MDC.remove(AdditionalKeys.PROTCOL);
+        MDC.remove(AdditionalKeys.PROTOCOL);
         MDC.remove(AdditionalKeys.REQ_URI);
         MDC.remove(AdditionalKeys.REQ_LENGTH);
         MDC.remove(AdditionalKeys.REQ_CONTENT_TYPE);
         MDC.remove(AdditionalKeys.REQ_ENCODING);
-        MDC.remove(AdditionalKeys.REQ_STATUS);
+        MDC.remove(AdditionalKeys.RESP_STATUS);
         MDC.remove(AdditionalKeys.RESP_CONTENT_TYPE);
         MDC.remove(AdditionalKeys.RESP_ENCODING);
         MDC.remove(AdditionalKeys.RESP_TIME);
@@ -294,22 +311,68 @@ public class GelfLoggingFilter implements Filter {
         }
     }
 
-    private static final class AdditionalKeys {
+    private static class LoggingAsyncListener implements AsyncListener {
+
+        private final StringBuilder buf;
+        private final Stopwatch stopwatch;
+        private final String authType;
+        private final String clientAddress;
+        private final HttpServletRequest httpRequest;
+        private final CountingHttpServletResponseWrapper responseWrapper;
+
+        public LoggingAsyncListener(final StringBuilder buf, final Stopwatch stopwatch, final String authType,
+                                    final String clientAddress,
+                                    final HttpServletRequest httpRequest,
+                                    final CountingHttpServletResponseWrapper responseWrapper) {
+            this.buf = buf;
+            this.stopwatch = stopwatch;
+            this.authType = authType;
+            this.clientAddress = clientAddress;
+            this.httpRequest = httpRequest;
+            this.responseWrapper = responseWrapper;
+        }
+
+        @Override
+        public void onComplete(final AsyncEvent event) throws IOException {
+            logRequest(buf, stopwatch, authType, clientAddress, httpRequest, responseWrapper);
+        }
+
+        @Override
+        public void onTimeout(final AsyncEvent event) throws IOException {
+            // Intentionally empty
+        }
+
+        @Override
+        public void onError(final AsyncEvent event) throws IOException {
+            // Intentionally empty
+        }
+
+        @Override
+        public void onStartAsync(final AsyncEvent event) throws IOException {
+            // Intentionally empty
+        }
+    }
+
+    @VisibleForTesting
+    static final class AdditionalKeys {
 
         public static final String USER_AGENT = "userAgent";
         public static final String REQ_AUTH = "requestAuth";
         public static final String PRINCIPAL = "userPrincipal";
         public static final String REMOTE_ADDRESS = "remoteAddress";
         public static final String HTTP_METHOD = "httpMethod";
-        public static final String PROTCOL = "protocol";
+        public static final String PROTOCOL = "protocol";
         public static final String REQ_URI = "requestUri";
         public static final String REQ_LENGTH = "requestLength";
         public static final String REQ_CONTENT_TYPE = "requestContentType";
         public static final String REQ_ENCODING = "requestEncoding";
-        public static final String REQ_STATUS = "responseStatus";
+        public static final String RESP_STATUS = "responseStatus";
         public static final String RESP_CONTENT_TYPE = "responseContentType";
         public static final String RESP_ENCODING = "responseEncoding";
         public static final String RESP_TIME = "responseTimeNanos";
         public static final String RESP_LENGTH = "responseLength";
+
+        private AdditionalKeys() {
+        }
     }
 }
