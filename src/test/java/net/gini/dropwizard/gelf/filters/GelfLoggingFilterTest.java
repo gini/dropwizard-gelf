@@ -2,12 +2,13 @@ package net.gini.dropwizard.gelf.filters;
 
 import com.google.common.base.Charsets;
 
+import net.gini.dropwizard.gelf.testing.ExpectedLogEntry;
+
 import org.eclipse.jetty.http.HttpStatus;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -30,9 +31,7 @@ import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
-import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.read.ListAppender;
 import io.dropwizard.Application;
 import io.dropwizard.Configuration;
 import io.dropwizard.setup.Environment;
@@ -46,7 +45,6 @@ import static net.gini.dropwizard.gelf.filters.GelfLoggingFilter.AdditionalKeys.
 import static net.gini.dropwizard.gelf.filters.GelfLoggingFilter.AdditionalKeys.RESP_STATUS;
 import static net.gini.dropwizard.gelf.filters.GelfLoggingFilter.AdditionalKeys.RESP_TIME;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
 
 /**
  * Integration tests for {@link GelfLoggingFilter}.
@@ -60,36 +58,24 @@ public class GelfLoggingFilterTest {
 
     @ClassRule
     public static DropwizardAppRule<Configuration> APP = new DropwizardAppRule<>(TestApp.class);
+    @Rule
+    public ExpectedLogEntry expectedLogEntry = new ExpectedLogEntry();
 
     private static WebTarget target;
-    private static ListAppender<ILoggingEvent> appender;
-    private int logStartIndex;
 
     @BeforeClass
     public static void setupTarget() {
         target = ClientBuilder.newClient().target("http://127.0.0.1:" + APP.getLocalPort());
     }
 
-    @BeforeClass
-    public static void setupAppender() {
-        appender = new ListAppender<>();
-        final Logger logger = (Logger) LoggerFactory.getLogger(GelfLoggingFilter.class);
-        logger.addAppender(appender);
-        appender.start();
-    }
-
-    @Before
-    public void setUp() {
-        logStartIndex = appender.list.size();
-    }
-
     @Test
-    public void testMdcIsFilled() {
+    public void testMdcIsFilled() throws InterruptedException {
+        expectedLogEntry.mdcKeyAndValue(REQ_URI, "/hello");
         final Response response = target.path("/hello").request().get();
 
         assertThat(response.getStatus()).isEqualTo(HttpStatus.OK_200);
         assertThat(response.readEntity(String.class)).isEqualTo(HELLO_WORLD);
-        final ILoggingEvent logEntry = findLogEntry("/hello");
+        final ILoggingEvent logEntry = expectedLogEntry.getEntry();
         assertThat(logEntry.getFormattedMessage())
                 .isEqualTo("127.0.0.1 - - \"GET /hello HTTP/1.1\" 200 " + HELLO_WORLD_BYTES.length);
         final Map<String, String> mdc = logEntry.getMDCPropertyMap();
@@ -101,31 +87,34 @@ public class GelfLoggingFilterTest {
     }
 
     @Test
-    public void testResponseTime() {
+    public void testResponseTime() throws InterruptedException {
+        expectedLogEntry.mdcKeyAndValue(REQ_URI, "/slow");
         final Response response = target.path("/slow").request().get();
 
         assertThat(response.getStatus()).isEqualTo(HttpStatus.OK_200);
         assertThat(response.readEntity(String.class)).isEqualTo(HELLO_WORLD);
-        final ILoggingEvent logEntry = findLogEntry("/slow");
+        final ILoggingEvent logEntry = expectedLogEntry.getEntry();
         verifyResponseTimeLongerThan(logEntry, SLEEP_TIME_IN_MS, TimeUnit.MILLISECONDS);
     }
 
     @Test
-    public void testResponseSize() {
+    public void testResponseSize() throws InterruptedException {
+        expectedLogEntry.mdcKeyAndValue(REQ_URI, "/large");
         final Response response = target.path("/large").request().get();
 
         assertThat(response.getStatus()).isEqualTo(HttpStatus.OK_200);
-        final ILoggingEvent logEntry = findLogEntry("/large");
+        final ILoggingEvent logEntry = expectedLogEntry.getEntry();
         verifyLength(logEntry, LARGE_ITERATIONS * HELLO_WORLD_BYTES.length);
     }
 
     @Test
     public void testAsyncResponse() throws InterruptedException {
+        expectedLogEntry.mdcKeyAndValue(REQ_URI, "/async");
         final Response response = target.path("/async").request().get();
 
         assertThat(response.getStatus()).isEqualTo(HttpStatus.OK_200);
         assertThat(response.readEntity(String.class)).isEqualTo(HELLO_WORLD);
-        final ILoggingEvent logEntry = findLogEntry("/async");
+        final ILoggingEvent logEntry = expectedLogEntry.getEntry();
         final Map<String, String> mdc = logEntry.getMDCPropertyMap();
         assertThat(mdc.get(PROTOCOL)).isEqualTo("HTTP/1.1");
         assertThat(mdc.get(RESP_STATUS)).isEqualTo("200");
@@ -145,18 +134,6 @@ public class GelfLoggingFilterTest {
         assertThat(responseTime).isNotNull();
         assertThat(Long.parseLong(responseTime)).isGreaterThan(unit.toNanos(expectedTime));
 
-    }
-
-    private ILoggingEvent findLogEntry(final String requestPath) {
-        for (ILoggingEvent event : appender.list.subList(logStartIndex, appender.list.size())) {
-            final Map<String, String> mdc = event.getMDCPropertyMap();
-            if (requestPath.equals(mdc.get(REQ_URI))) {
-                return event;
-            }
-        }
-        fail("Log entry for request " + requestPath + " not found!");
-        // Not reached as fail throws
-        return null;
     }
 
     public static class TestApp extends Application<Configuration> {
