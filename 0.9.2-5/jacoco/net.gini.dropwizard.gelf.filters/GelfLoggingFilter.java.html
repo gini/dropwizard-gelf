@@ -1,0 +1,379 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>GelfLoggingFilter.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Dropwizard GELF Bundle</a> &gt; <a href="index.source.html" class="el_package">net.gini.dropwizard.gelf.filters</a> &gt; <span class="el_source">GelfLoggingFilter.java</span></div><h1>GelfLoggingFilter.java</h1><pre class="source lang-java linenums">package net.gini.dropwizard.gelf.filters;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Optional;
+import com.google.common.base.Stopwatch;
+import com.google.common.io.CountingOutputStream;
+import com.google.common.net.HttpHeaders;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
+
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+
+import javax.servlet.AsyncEvent;
+import javax.servlet.AsyncListener;
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.WriteListener;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
+
+/**
+ * A {@link Filter} which logs requests and adds some data about it to the logger's {@link MDC}.
+ */
+<span class="fc" id="L33">public class GelfLoggingFilter implements Filter {</span>
+
+<span class="fc" id="L35">    private static final Logger LOG = LoggerFactory.getLogger(GelfLoggingFilter.class);</span>
+
+    /**
+     * Called by the web container to indicate to a filter that it is
+     * being placed into service.
+     * &lt;p/&gt;
+     * &lt;p&gt;The servlet container calls the init
+     * method exactly once after instantiating the filter. The init
+     * method must complete successfully before the filter is asked to do any
+     * filtering work.
+     * &lt;p/&gt;
+     * &lt;p&gt;The web container cannot place the filter into service if the init
+     * method either
+     * &lt;ol&gt;
+     * &lt;li&gt;Throws a ServletException
+     * &lt;li&gt;Does not return within a time period defined by the web container
+     * &lt;/ol&gt;
+     *
+     * @param filterConfig the {@link FilterChain} for this {@link Filter}
+     * @throws ServletException if something goes wrong
+     */
+    @Override
+    public void init(FilterConfig filterConfig) throws ServletException {
+        // Do nothing
+<span class="fc" id="L59">    }</span>
+
+    /**
+     * The &lt;code&gt;doFilter&lt;/code&gt; method of the Filter is called by the
+     * container each time a request/response pair is passed through the
+     * chain due to a client request for a resource at the end of the chain.
+     * The FilterChain passed in to this method allows the Filter to pass
+     * on the request and response to the next entity in the chain.
+     * &lt;p/&gt;
+     * &lt;p&gt;A typical implementation of this method would follow the following
+     * pattern:
+     * &lt;ol&gt;
+     * &lt;li&gt;Examine the request
+     * &lt;li&gt;Optionally wrap the request object with a custom implementation to
+     * filter content or headers for input filtering
+     * &lt;li&gt;Optionally wrap the response object with a custom implementation to
+     * filter content or headers for output filtering
+     * &lt;li&gt;
+     * &lt;ul&gt;
+     * &lt;li&gt;&lt;strong&gt;Either&lt;/strong&gt; invoke the next entity in the chain
+     * using the FilterChain object
+     * (&lt;code&gt;chain.doFilter()&lt;/code&gt;),
+     * &lt;li&gt;&lt;strong&gt;or&lt;/strong&gt; not pass on the request/response pair to
+     * the next entity in the filter chain to
+     * block the request processing
+     * &lt;/ul&gt;
+     * &lt;li&gt;Directly set headers on the response after invocation of the
+     * next entity in the filter chain.
+     * &lt;/ol&gt;
+     */
+    @Override
+    public void doFilter(final ServletRequest request, final ServletResponse response, final FilterChain chain)
+            throws IOException, ServletException {
+        // It's quite safe to assume that we only receive HTTP requests
+<span class="fc" id="L93">        final HttpServletRequest httpRequest = (HttpServletRequest) request;</span>
+<span class="fc" id="L94">        final HttpServletResponse httpResponse = (HttpServletResponse) response;</span>
+
+<span class="fc" id="L96">        final StringBuilder buf = new StringBuilder(256);</span>
+
+<span class="fc" id="L98">        final Optional&lt;String&gt; address = Optional.fromNullable(httpRequest.getHeader(HttpHeaders.X_FORWARDED_FOR));</span>
+<span class="fc" id="L99">        final String clientAddress = address.or(request.getRemoteAddr());</span>
+
+<span class="fc" id="L101">        buf.append(clientAddress);</span>
+<span class="fc" id="L102">        buf.append(&quot; - &quot;);</span>
+
+<span class="fc" id="L104">        final String authType = httpRequest.getAuthType();</span>
+<span class="pc bpc" id="L105" title="1 of 2 branches missed.">        if (authType != null) {</span>
+<span class="nc" id="L106">            buf.append(httpRequest.getUserPrincipal().getName());</span>
+        } else {
+<span class="fc" id="L108">            buf.append(&quot;-&quot;);</span>
+        }
+<span class="fc" id="L110">        buf.append(&quot; \&quot;&quot;);</span>
+<span class="fc" id="L111">        buf.append(httpRequest.getMethod());</span>
+<span class="fc" id="L112">        buf.append(' ');</span>
+<span class="fc" id="L113">        buf.append(httpRequest.getRequestURI());</span>
+<span class="fc" id="L114">        buf.append(' ');</span>
+<span class="fc" id="L115">        buf.append(request.getProtocol());</span>
+<span class="fc" id="L116">        buf.append(&quot;\&quot; &quot;);</span>
+
+<span class="fc" id="L118">        final CountingHttpServletResponseWrapper responseWrapper = new CountingHttpServletResponseWrapper(httpResponse);</span>
+
+<span class="fc" id="L120">        final Stopwatch stopwatch = Stopwatch.createUnstarted();</span>
+<span class="fc" id="L121">        stopwatch.start();</span>
+
+        try {
+<span class="fc" id="L124">            chain.doFilter(request, responseWrapper);</span>
+        } finally {
+<span class="pc bpc" id="L126" title="2 of 4 branches missed.">            if (request.isAsyncStarted()) {</span>
+<span class="pc" id="L127">                final AsyncListener listener =</span>
+                        new LoggingAsyncListener(buf, stopwatch, authType, clientAddress, httpRequest,
+                                                 responseWrapper);
+<span class="pc" id="L130">                request.getAsyncContext().addListener(listener);</span>
+<span class="pc" id="L131">            } else {</span>
+<span class="pc" id="L132">                logRequest(buf, stopwatch, authType, clientAddress, httpRequest, responseWrapper);</span>
+            }
+<span class="fc" id="L134">        }</span>
+<span class="fc" id="L135">    }</span>
+
+    private static void logRequest(final StringBuilder buf, final Stopwatch stopwatch, final String authType,
+                                   final String clientAddress,
+                                   final HttpServletRequest httpRequest,
+                                   final CountingHttpServletResponseWrapper responseWrapper) {
+<span class="fc" id="L141">        stopwatch.stop();</span>
+
+<span class="fc" id="L143">        buf.append(responseWrapper.getStatus());</span>
+<span class="fc" id="L144">        buf.append(&quot; &quot;);</span>
+<span class="fc" id="L145">        buf.append(responseWrapper.getCount());</span>
+
+<span class="fc" id="L147">        final String userAgent = httpRequest.getHeader(HttpHeaders.USER_AGENT);</span>
+<span class="pc bpc" id="L148" title="1 of 2 branches missed.">        if (userAgent != null) {</span>
+<span class="fc" id="L149">            MDC.put(AdditionalKeys.USER_AGENT, userAgent);</span>
+        }
+
+<span class="pc bpc" id="L152" title="1 of 2 branches missed.">        if (authType != null) {</span>
+<span class="nc" id="L153">            MDC.put(AdditionalKeys.REQ_AUTH, authType);</span>
+<span class="nc" id="L154">            MDC.put(AdditionalKeys.PRINCIPAL, httpRequest.getUserPrincipal().getName());</span>
+        }
+
+<span class="fc" id="L157">        MDC.put(AdditionalKeys.REMOTE_ADDRESS, clientAddress);</span>
+<span class="fc" id="L158">        MDC.put(AdditionalKeys.HTTP_METHOD, httpRequest.getMethod());</span>
+<span class="fc" id="L159">        MDC.put(AdditionalKeys.PROTOCOL, httpRequest.getProtocol());</span>
+<span class="fc" id="L160">        MDC.put(AdditionalKeys.REQ_URI, httpRequest.getRequestURI());</span>
+<span class="fc" id="L161">        MDC.put(AdditionalKeys.REQ_LENGTH, String.valueOf(httpRequest.getContentLength()));</span>
+<span class="fc" id="L162">        MDC.put(AdditionalKeys.REQ_CONTENT_TYPE, httpRequest.getContentType());</span>
+<span class="fc" id="L163">        MDC.put(AdditionalKeys.REQ_ENCODING, httpRequest.getCharacterEncoding());</span>
+<span class="fc" id="L164">        MDC.put(AdditionalKeys.RESP_STATUS, String.valueOf(responseWrapper.getStatus()));</span>
+<span class="fc" id="L165">        MDC.put(AdditionalKeys.RESP_CONTENT_TYPE, responseWrapper.getContentType());</span>
+<span class="fc" id="L166">        MDC.put(AdditionalKeys.RESP_ENCODING, responseWrapper.getCharacterEncoding());</span>
+<span class="fc" id="L167">        MDC.put(AdditionalKeys.RESP_TIME, String.valueOf(stopwatch.elapsed(TimeUnit.NANOSECONDS)));</span>
+<span class="fc" id="L168">        MDC.put(AdditionalKeys.RESP_LENGTH, String.valueOf(responseWrapper.getCount()));</span>
+
+<span class="fc" id="L170">        LOG.info(buf.toString());</span>
+
+<span class="fc" id="L172">        clearMDC();</span>
+<span class="fc" id="L173">    }</span>
+
+    /**
+     * Called by the web container to indicate to a filter that it is being
+     * taken out of service.
+     * &lt;p/&gt;
+     * &lt;p&gt;This method is only called once all threads within the filter's
+     * doFilter method have exited or after a timeout period has passed.
+     * After the web container calls this method, it will not call the
+     * doFilter method again on this instance of the filter.
+     * &lt;p/&gt;
+     * &lt;p&gt;This method gives the filter an opportunity to clean up any
+     * resources that are being held (for example, memory, file handles,
+     * threads) and make sure that any persistent state is synchronized
+     * with the filter's current state in memory.
+     */
+    @Override
+    public void destroy() {
+        // Do nothing
+<span class="fc" id="L192">    }</span>
+
+    private static void clearMDC() {
+<span class="fc" id="L195">        MDC.remove(AdditionalKeys.USER_AGENT);</span>
+<span class="fc" id="L196">        MDC.remove(AdditionalKeys.REQ_AUTH);</span>
+<span class="fc" id="L197">        MDC.remove(AdditionalKeys.PRINCIPAL);</span>
+<span class="fc" id="L198">        MDC.remove(AdditionalKeys.REMOTE_ADDRESS);</span>
+<span class="fc" id="L199">        MDC.remove(AdditionalKeys.HTTP_METHOD);</span>
+<span class="fc" id="L200">        MDC.remove(AdditionalKeys.PROTOCOL);</span>
+<span class="fc" id="L201">        MDC.remove(AdditionalKeys.REQ_URI);</span>
+<span class="fc" id="L202">        MDC.remove(AdditionalKeys.REQ_LENGTH);</span>
+<span class="fc" id="L203">        MDC.remove(AdditionalKeys.REQ_CONTENT_TYPE);</span>
+<span class="fc" id="L204">        MDC.remove(AdditionalKeys.REQ_ENCODING);</span>
+<span class="fc" id="L205">        MDC.remove(AdditionalKeys.RESP_STATUS);</span>
+<span class="fc" id="L206">        MDC.remove(AdditionalKeys.RESP_CONTENT_TYPE);</span>
+<span class="fc" id="L207">        MDC.remove(AdditionalKeys.RESP_ENCODING);</span>
+<span class="fc" id="L208">        MDC.remove(AdditionalKeys.RESP_TIME);</span>
+<span class="fc" id="L209">        MDC.remove(AdditionalKeys.RESP_LENGTH);</span>
+<span class="fc" id="L210">    }</span>
+
+    /**
+     * An implementation of {@link ServletOutputStream} which counts the bytes being
+     * written using a {@link CountingOutputStream}.
+     */
+    private static final class CountingServletOutputStream extends ServletOutputStream {
+
+        private final CountingOutputStream outputStream;
+
+<span class="fc" id="L220">        private CountingServletOutputStream(ServletOutputStream servletOutputStream) {</span>
+<span class="fc" id="L221">            this.outputStream = new CountingOutputStream(servletOutputStream);</span>
+<span class="fc" id="L222">        }</span>
+
+        /**
+         * Writes the specified byte to this output stream. The general
+         * contract for &lt;code&gt;write&lt;/code&gt; is that one byte is written
+         * to the output stream. The byte to be written is the eight
+         * low-order bits of the argument &lt;code&gt;b&lt;/code&gt;. The 24
+         * high-order bits of &lt;code&gt;b&lt;/code&gt; are ignored.
+         * &lt;p/&gt;
+         * Subclasses of &lt;code&gt;OutputStream&lt;/code&gt; must provide an
+         * implementation for this method.
+         *
+         * @param b the &lt;code&gt;byte&lt;/code&gt;.
+         * @throws java.io.IOException if an I/O error occurs. In particular,
+         *                             an &lt;code&gt;IOException&lt;/code&gt; may be thrown if the
+         *                             output stream has been closed.
+         */
+        @Override
+        public void write(int b) throws IOException {
+<span class="fc" id="L241">            outputStream.write(b);</span>
+<span class="fc" id="L242">        }</span>
+
+        public long getCount() {
+<span class="fc" id="L245">            return outputStream.getCount();</span>
+        }
+
+        @Override
+        public boolean isReady() {
+<span class="nc" id="L250">            return true;</span>
+        }
+
+        @Override
+        public void setWriteListener(WriteListener writeListener) {
+            // NOP
+<span class="nc" id="L256">        }</span>
+    }
+
+    /**
+     * An implementation of {@link HttpServletResponseWrapper} which counts the bytes being written as the response
+     * body using a {@link CountingServletOutputStream}.
+     */
+    private static final class CountingHttpServletResponseWrapper extends HttpServletResponseWrapper {
+        private CountingServletOutputStream outputStream;
+
+        private CountingHttpServletResponseWrapper(HttpServletResponse response) throws IOException {
+<span class="fc" id="L267">            super(response);</span>
+<span class="fc" id="L268">        }</span>
+
+        /**
+         * The default behavior of this method is to return getOutputStream()
+         * on the wrapped response object.
+         */
+        @Override
+        public ServletOutputStream getOutputStream() throws IOException {
+<span class="pc bpc" id="L276" title="1 of 2 branches missed.">            if (outputStream == null) {</span>
+<span class="fc" id="L277">                outputStream = new CountingServletOutputStream(getResponse().getOutputStream());</span>
+            }
+<span class="fc" id="L279">            return outputStream;</span>
+        }
+
+        /**
+         * Get the number of bytes written to the response output stream.
+         *
+         * @return the number of bytes written to the response output stream
+         */
+        public long getCount() {
+<span class="pc bpc" id="L288" title="1 of 2 branches missed.">            return outputStream == null ? 0L : outputStream.getCount();</span>
+        }
+
+        /**
+         * The default behavior of this method is to call resetBuffer() on the wrapped response object.
+         *
+         * @see javax.servlet.http.HttpServletResponseWrapper#resetBuffer()
+         */
+        @Override
+        public void resetBuffer() {
+<span class="nc" id="L298">            super.resetBuffer();</span>
+<span class="nc" id="L299">            outputStream = null;</span>
+<span class="nc" id="L300">        }</span>
+
+        /**
+         * The default behavior of this method is to call reset() on the wrapped response object.
+         *
+         * @see javax.servlet.http.HttpServletResponseWrapper#reset()
+         */
+        @Override
+        public void reset() {
+<span class="nc" id="L309">            super.reset();</span>
+<span class="nc" id="L310">            outputStream = null;</span>
+<span class="nc" id="L311">        }</span>
+    }
+
+    private static class LoggingAsyncListener implements AsyncListener {
+
+        private final StringBuilder buf;
+        private final Stopwatch stopwatch;
+        private final String authType;
+        private final String clientAddress;
+        private final HttpServletRequest httpRequest;
+        private final CountingHttpServletResponseWrapper responseWrapper;
+
+        public LoggingAsyncListener(final StringBuilder buf, final Stopwatch stopwatch, final String authType,
+                                    final String clientAddress,
+                                    final HttpServletRequest httpRequest,
+<span class="fc" id="L326">                                    final CountingHttpServletResponseWrapper responseWrapper) {</span>
+<span class="fc" id="L327">            this.buf = buf;</span>
+<span class="fc" id="L328">            this.stopwatch = stopwatch;</span>
+<span class="fc" id="L329">            this.authType = authType;</span>
+<span class="fc" id="L330">            this.clientAddress = clientAddress;</span>
+<span class="fc" id="L331">            this.httpRequest = httpRequest;</span>
+<span class="fc" id="L332">            this.responseWrapper = responseWrapper;</span>
+<span class="fc" id="L333">        }</span>
+
+        @Override
+        public void onComplete(final AsyncEvent event) throws IOException {
+<span class="fc" id="L337">            logRequest(buf, stopwatch, authType, clientAddress, httpRequest, responseWrapper);</span>
+<span class="fc" id="L338">        }</span>
+
+        @Override
+        public void onTimeout(final AsyncEvent event) throws IOException {
+            // Intentionally empty
+<span class="nc" id="L343">        }</span>
+
+        @Override
+        public void onError(final AsyncEvent event) throws IOException {
+            // Intentionally empty
+<span class="nc" id="L348">        }</span>
+
+        @Override
+        public void onStartAsync(final AsyncEvent event) throws IOException {
+            // Intentionally empty
+<span class="nc" id="L353">        }</span>
+    }
+
+    @VisibleForTesting
+    static final class AdditionalKeys {
+
+        public static final String USER_AGENT = &quot;userAgent&quot;;
+        public static final String REQ_AUTH = &quot;requestAuth&quot;;
+        public static final String PRINCIPAL = &quot;userPrincipal&quot;;
+        public static final String REMOTE_ADDRESS = &quot;remoteAddress&quot;;
+        public static final String HTTP_METHOD = &quot;httpMethod&quot;;
+        public static final String PROTOCOL = &quot;protocol&quot;;
+        public static final String REQ_URI = &quot;requestUri&quot;;
+        public static final String REQ_LENGTH = &quot;requestLength&quot;;
+        public static final String REQ_CONTENT_TYPE = &quot;requestContentType&quot;;
+        public static final String REQ_ENCODING = &quot;requestEncoding&quot;;
+        public static final String RESP_STATUS = &quot;responseStatus&quot;;
+        public static final String RESP_CONTENT_TYPE = &quot;responseContentType&quot;;
+        public static final String RESP_ENCODING = &quot;responseEncoding&quot;;
+        public static final String RESP_TIME = &quot;responseTimeNanos&quot;;
+        public static final String RESP_LENGTH = &quot;responseLength&quot;;
+
+<span class="nc" id="L375">        private AdditionalKeys() {</span>
+<span class="nc" id="L376">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>
