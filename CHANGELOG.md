@@ -1,6 +1,12 @@
 Dropwizard GELF Changelog
 =========================
 
+0.9.2-5
+-------
+
+* [#20](https://github.com/gini/dropwizard-gelf/pull/20): Support for asynchronous requests
+
+
 0.9.2-4
 -------
 
