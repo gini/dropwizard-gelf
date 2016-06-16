@@ -45,7 +45,7 @@ Your YAML configuration could include the following snippet to configure the `Ge
 appenders:
   - type: console
   - type: gelf
-    host: graylog.example.com
+    host: udp:graylog.example.com
     # port: 12201
     # facility: MyApplication
     # threshold: ALL
