@@ -1,6 +1,13 @@
 sudo: false
 language: java
-after_success:
-  - mvn -B jacoco:report coveralls:report
 jdk:
   - oraclejdk8
+env:
+  global:
+    - secure: "lfotkL9UjBthLt/XIHMX5bkwjPihXH20HMic/c0AYrvVGkj3KTII0uclM+xcZG2LZPN5mZ95DdYUjAcPAF2PNbhxpVZTd4VrnnfVAT5sQY80rueTGV4J/n1mVANDMo8rxoXnr4SrKPbdC+nNITdSA0HlWZoH9AY+glYtO3w9LSk="
+install:
+  - mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+script:
+  - mvn test versioneye:securityAndLicenseCheck -B
+after_success:
+  - mvn jacoco:report coveralls:report -B
