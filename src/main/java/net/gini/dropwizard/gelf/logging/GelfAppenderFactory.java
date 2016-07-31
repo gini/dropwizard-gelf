@@ -29,7 +29,7 @@ import java.util.Optional;
 public class GelfAppenderFactory extends AbstractAppenderFactory<ILoggingEvent> {
 
     @JsonProperty
-    private boolean enabled = true;
+        private boolean enabled = true;
 
     @JsonProperty
     @NotNull
