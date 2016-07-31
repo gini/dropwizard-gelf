@@ -6,7 +6,8 @@ engines:
     enabled: true
     config: checkstyle.xml
     channel: "beta"
-
+  fixme:
+    enabled: true
 ratings:
   paths:
     - "**.java"
