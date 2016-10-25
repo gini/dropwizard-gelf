@@ -4,7 +4,7 @@ Dropwizard GELF
 [![Coverage Status](https://img.shields.io/coveralls/gini/dropwizard-gelf.svg)](https://coveralls.io/r/gini/dropwizard-gelf)
 [![Maven Central](https://img.shields.io/maven-central/v/net.gini.dropwizard/dropwizard-gelf.svg)](http://mvnrepository.com/artifact/net.gini.dropwizard/dropwizard-gelf)
 
-Addon for Dropwizard adding support for logging to a GELF-enabled server like [Graylog](https://www.graylog.org/)
+Addon for Dropwizard adding support for logging to a GELF-enabled server such as [Graylog](https://www.graylog.org/)
 or [logstash](http://logstash.net/) using [logstash-gelf](http://logging.paluch.biz/).
 
 
@@ -93,6 +93,7 @@ Configuration settings
 
 * `udp:hostname` for UDP transport, e. g. `udp:127.0.0.1, `udp:some.host.com` or just `some.host.com`.
 * `tcp:hostname` for TCP transport, e. g. `tcp:127.0.0.1` or `tcp:some.host.com`. See [TCP transport for logstash-gelf] for details.
+* `ssl:hostname` for TCP+SSL transport, e. g. `ssl:127.0.0.1` or `ssl:some.host.com`. See [TCP transport for logstash-gelf] for details.
 * `redis://[:password@]hostname:port/db-number#listname` for Redis transport. See [Redis transport for logstash-gelf] for details.
 * `redis-sentinel://[:password@]hostname:port/db-number?masterId=masterId#listname` for Redis transport with Sentinel lookup. See [Redis transport for logstash-gelf] for details.
 * `http://host[:port]/[path]` for HTTP transport, e. g. `https://127.0.0.1/gelf`. See [HTTP transport for logstash-gelf] for details.
@@ -115,7 +116,7 @@ This project is available on Maven Central. To add it to your project simply add
     <dependency>
       <groupId>net.gini.dropwizard</groupId>
       <artifactId>dropwizard-gelf</artifactId>
-      <version>1.0.0-1</version>
+      <version>1.0.0-2</version>
     </dependency>
 
 
