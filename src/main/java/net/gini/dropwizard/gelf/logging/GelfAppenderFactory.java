@@ -237,7 +237,7 @@ public class GelfAppenderFactory extends AbstractAppenderFactory<ILoggingEvent> 
         appender.setAdditionalFieldTypes(buildFieldsSpec(additionalFieldTypes));
         appender.setMdcFields(buildMdcFieldsSpec(mdcFields));
         appender.setDynamicMdcFields(buildMdcFieldsSpec(dynamicMdcFields));
-        appender.setIncludeFullMdc(true);
+        appender.setIncludeFullMdc(includeFullMDC);
         appender.setMdcProfiling(mdcProfiling);
         appender.setExtractStackTrace(extractStackTrace);
         appender.setFilterStackTrace(filterStackTrace);
