@@ -1,6 +1,24 @@
 Dropwizard GELF Changelog
 =========================
 
+1.0.0-3
+-------
+
+* [#24](https://github.com/gini/dropwizard-gelf/pull/24): Properly pass includeFullMdc property along
+
+
+1.0.0-2
+-------
+
+* Upgrade to logstash-gelf 1.11.0
+
+
+1.0.0-1
+-------
+
+* Upgrade to Dropwizard 1.0.0
+
+
 0.9.2-5
 -------
 
