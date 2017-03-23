@@ -239,7 +239,7 @@ public class GelfAppenderFactory extends AbstractAppenderFactory<ILoggingEvent> 
         appender.setDynamicMdcFields(buildMdcFieldsSpec(dynamicMdcFields));
         appender.setIncludeFullMdc(includeFullMDC);
         appender.setMdcProfiling(mdcProfiling);
-        appender.setExtractStackTrace(extractStackTrace);
+        appender.setExtractStackTrace(Boolean.toString(extractStackTrace));
         appender.setFilterStackTrace(filterStackTrace);
         appender.setMaximumMessageSize(maximumMessageSize);
         appender.setTimestampPattern(timestampPattern);
