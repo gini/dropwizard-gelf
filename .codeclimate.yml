@@ -1,0 +1,13 @@
+engines:
+  pmd:
+    enabled: true
+    channel: "beta"
+  checkstyle:
+    enabled: true
+    config: checkstyle.xml
+    channel: "beta"
+  fixme:
+    enabled: true
+ratings:
+  paths:
+    - "**.java"
