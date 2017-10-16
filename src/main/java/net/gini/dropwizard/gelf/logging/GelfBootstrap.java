@@ -1,6 +1,5 @@
 package net.gini.dropwizard.gelf.logging;
 
-import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import io.dropwizard.logging.async.AsyncLoggingEventAppenderFactory;
 import io.dropwizard.logging.filter.ThresholdLevelFilterFactory;
@@ -39,7 +38,7 @@ public final class GelfBootstrap {
         // initially configure for WARN+ GELF logging
         final GelfAppenderFactory gelf = new GelfAppenderFactory();
         gelf.setIncludeFullMDC(true);
-        gelf.setThreshold(Level.WARN);
+        gelf.setThreshold("WARN");
         gelf.setHost(host);
         gelf.setPort(port);
         gelf.setOriginHost(hostName);

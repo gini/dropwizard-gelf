@@ -35,6 +35,7 @@ public class GelfAppenderFactoryTest {
         assertThat("default dynamic MDC fields are empty", factory.getDynamicMdcFields().isEmpty(), is(true));
         assertThat("default maximum message size is 8192", factory.getMaximumMessageSize(), is(8192));
         assertThat("default timestamp pattern is \"yyyy-MM-dd HH:mm:ss,SSSS\"", factory.getTimestampPattern(), is("yyyy-MM-dd HH:mm:ss,SSSS"));
+        assertThat("default threshold is ALL", factory.getThreshold(), is("ALL"));
     }
 
     @Test
