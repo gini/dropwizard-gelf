@@ -32,10 +32,6 @@ public class GelfAppenderFactory extends AbstractAppenderFactory<ILoggingEvent> 
     private boolean enabled = true;
 
     @JsonProperty
-    @NotNull
-    private Level threshold = Level.ALL;
-
-    @JsonProperty
     private Optional<String> facility = Optional.empty();
 
     @JsonProperty
@@ -84,14 +80,6 @@ public class GelfAppenderFactory extends AbstractAppenderFactory<ILoggingEvent> 
     @JsonProperty
     @NotNull
     private String timestampPattern = "yyyy-MM-dd HH:mm:ss,SSSS";
-
-    public Level getThreshold() {
-        return threshold;
-    }
-
-    public void setThreshold(Level threshold) {
-        this.threshold = threshold;
-    }
 
     public Optional<String> getFacility() {
         return facility;
