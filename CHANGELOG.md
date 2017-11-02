@@ -1,6 +1,12 @@
 Dropwizard GELF Changelog
 =========================
 
+1.2.0-1
+-------
+
+* [#26](https://github.com/gini/dropwizard-gelf/pull/26): Upgrade to Dropwizard 1.2.0
+
+
 1.1.0-1
 -------
 
