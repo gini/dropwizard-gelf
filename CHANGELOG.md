@@ -1,6 +1,12 @@
 Dropwizard GELF Changelog
 =========================
 
+1.2.0-2
+-------
+
+* Upgrade to logstash-gelf 1.12.0
+* Add support for `includeLocation` setting
+
 1.2.0-1
 -------
 
