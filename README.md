@@ -53,6 +53,7 @@ appenders:
     extractStackTrace: true
     filterStackTrace: true
     includeFullMDC: true
+    includeLocation: true
     additionalFields:
       data_center: DC01
       rack: R5C2
@@ -81,6 +82,7 @@ Configuration settings
 | `mdcFields`            | [empty]                    | List of additional fields whose values are obtained from [MDC].                                                                                       |
 | `dynamicMdcFields`     | [empty]                    | Dynamic MDC Fields allows you to extract [MDC] values based on one or more regular expressions. The name of the MDC entry is used as GELF field name. |
 | `includeFullMdc`       | `false`                    | Include all fields from the [MDC].                                                                                                                    |
+| `includeLocation`      | `true`                     | Include source code location.                                                                                                                         |
 | `maximumMessageSize`   | `8192`                     | Maximum message size (in bytes). If the message size is exceeded, the appender will submit the message in multiple chunks (UDP only).                 |
 | `timestampPattern`     | `yyyy-MM-dd HH:mm:ss,SSSS` | Date/time pattern for the time field.                                                                                                                 |
 

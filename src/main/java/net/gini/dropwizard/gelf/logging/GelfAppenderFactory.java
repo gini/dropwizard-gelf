@@ -57,6 +57,9 @@ public class GelfAppenderFactory extends AbstractAppenderFactory<ILoggingEvent> 
     private boolean includeFullMDC = false;
 
     @JsonProperty
+    private boolean includeLocation = true;
+
+    @JsonProperty
     @NotNull
     private Collection<String> mdcFields = ImmutableList.of();
 
@@ -135,6 +138,14 @@ public class GelfAppenderFactory extends AbstractAppenderFactory<ILoggingEvent> 
 
     public void setIncludeFullMDC(boolean includeFullMDC) {
         this.includeFullMDC = includeFullMDC;
+    }
+
+    public boolean isIncludeLocation() {
+        return includeLocation;
+    }
+
+    public void setIncludeLocation(boolean includeLocation) {
+        this.includeLocation = includeLocation;
     }
 
     public boolean isEnabled() {
@@ -226,18 +237,17 @@ public class GelfAppenderFactory extends AbstractAppenderFactory<ILoggingEvent> 
         appender.setMdcFields(buildMdcFieldsSpec(mdcFields));
         appender.setDynamicMdcFields(buildMdcFieldsSpec(dynamicMdcFields));
         appender.setIncludeFullMdc(includeFullMDC);
+        appender.setIncludeLocation(includeLocation);
         appender.setMdcProfiling(mdcProfiling);
         appender.setExtractStackTrace(Boolean.toString(extractStackTrace));
         appender.setFilterStackTrace(filterStackTrace);
         appender.setMaximumMessageSize(maximumMessageSize);
         appender.setTimestampPattern(timestampPattern);
 
-        if (originHost.isPresent()) {
-            appender.setOriginHost(originHost.get());
-        }
+        originHost.ifPresent(appender::setOriginHost);
 
         appender.addFilter(levelFilterFactory.build(threshold));
-        getFilterFactories().stream().forEach(f -> appender.addFilter(f.build()));
+        getFilterFactories().forEach(f -> appender.addFilter(f.build()));
         appender.start();
 
         return wrapAsync(appender, asyncAppenderFactory);
