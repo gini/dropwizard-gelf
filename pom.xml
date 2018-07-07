@@ -4,7 +4,7 @@
 
     <groupId>net.gini.dropwizard</groupId>
     <artifactId>dropwizard-gelf</artifactId>
-    <version>1.2.0-2</version>
+    <version>1.2.0-3-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Dropwizard GELF Bundle</name>
@@ -25,7 +25,7 @@
         <developerConnection>scm:git:git@github.com:gini/dropwizard-gelf.git</developerConnection>
         <connection>scm:git:github.com/gini/dropwizard-gelf.git</connection>
         <url>https://github.com/gini/dropwizard-gelf</url>
-      <tag>dropwizard-gelf-1.2.0-2</tag>
+      <tag>HEAD</tag>
   </scm>
 
     <ciManagement>
