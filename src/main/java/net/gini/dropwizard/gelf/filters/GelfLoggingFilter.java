@@ -2,8 +2,8 @@ package net.gini.dropwizard.gelf.filters;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Stopwatch;
-import com.google.common.io.CountingOutputStream;
 import com.google.common.net.HttpHeaders;
+import org.eclipse.jetty.server.HttpOutput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -206,59 +206,9 @@ public class GelfLoggingFilter implements Filter {
     }
 
     /**
-     * An implementation of {@link ServletOutputStream} which counts the bytes being
-     * written using a {@link CountingOutputStream}.
-     */
-    private static final class CountingServletOutputStream extends ServletOutputStream {
-
-        private final CountingOutputStream outputStream;
-
-        private CountingServletOutputStream(ServletOutputStream servletOutputStream) {
-            this.outputStream = new CountingOutputStream(servletOutputStream);
-        }
-
-        /**
-         * Writes the specified byte to this output stream. The general
-         * contract for <code>write</code> is that one byte is written
-         * to the output stream. The byte to be written is the eight
-         * low-order bits of the argument <code>b</code>. The 24
-         * high-order bits of <code>b</code> are ignored.
-         * <p>
-         * Subclasses of <code>OutputStream</code> must provide an
-         * implementation for this method.
-         * </p>
-         *
-         * @param b the <code>byte</code>.
-         * @throws java.io.IOException if an I/O error occurs. In particular,
-         *                             an <code>IOException</code> may be thrown if the
-         *                             output stream has been closed.
-         */
-        @Override
-        public void write(int b) throws IOException {
-            outputStream.write(b);
-        }
-
-        public long getCount() {
-            return outputStream.getCount();
-        }
-
-        @Override
-        public boolean isReady() {
-            return true;
-        }
-
-        @Override
-        public void setWriteListener(WriteListener writeListener) {
-            // NOP
-        }
-    }
-
-    /**
-     * An implementation of {@link HttpServletResponseWrapper} which counts the bytes being written as the response
-     * body using a {@link CountingServletOutputStream}.
+     * An implementation of {@link HttpServletResponseWrapper} which counts the bytes being written
      */
     private static final class CountingHttpServletResponseWrapper extends HttpServletResponseWrapper {
-        private CountingServletOutputStream outputStream;
 
         private CountingHttpServletResponseWrapper(HttpServletResponse response) throws IOException {
             super(response);
@@ -270,10 +220,7 @@ public class GelfLoggingFilter implements Filter {
          */
         @Override
         public ServletOutputStream getOutputStream() throws IOException {
-            if (outputStream == null) {
-                outputStream = new CountingServletOutputStream(getResponse().getOutputStream());
-            }
-            return outputStream;
+            return getResponse().getOutputStream();
         }
 
         /**
@@ -282,7 +229,15 @@ public class GelfLoggingFilter implements Filter {
          * @return the number of bytes written to the response output stream
          */
         public long getCount() {
-            return outputStream == null ? 0L : outputStream.getCount();
+            try (ServletOutputStream outputStream = getOutputStream()) {
+                if (outputStream instanceof HttpOutput) {
+                    return ((HttpOutput) outputStream).getWritten();
+                }
+            } catch (IOException ignore) {
+                ignore.printStackTrace();
+                // if this fails, we'd just report 0
+            }
+            return 0L;
         }
 
         /**
@@ -293,7 +248,6 @@ public class GelfLoggingFilter implements Filter {
         @Override
         public void resetBuffer() {
             super.resetBuffer();
-            outputStream = null;
         }
 
         /**
@@ -304,7 +258,6 @@ public class GelfLoggingFilter implements Filter {
         @Override
         public void reset() {
             super.reset();
-            outputStream = null;
         }
     }
 
