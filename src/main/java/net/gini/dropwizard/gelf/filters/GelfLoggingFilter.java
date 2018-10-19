@@ -211,9 +211,14 @@ public class GelfLoggingFilter implements Filter {
      */
     private static final class CountingServletOutputStream extends ServletOutputStream {
 
+        /**
+         * The underlying stream that is wrapped by CountingOutputStream.
+         */
+        private final ServletOutputStream underlyingStream;
         private final CountingOutputStream outputStream;
 
         private CountingServletOutputStream(ServletOutputStream servletOutputStream) {
+            this.underlyingStream = servletOutputStream;
             this.outputStream = new CountingOutputStream(servletOutputStream);
         }
 
@@ -243,18 +248,23 @@ public class GelfLoggingFilter implements Filter {
             outputStream.write(b, off, len);
         }
 
+        @Override
+        public void flush() throws IOException {
+            underlyingStream.flush();
+        }
+
         public long getCount() {
             return outputStream.getCount();
         }
 
         @Override
         public boolean isReady() {
-            return true;
+            return underlyingStream.isReady();
         }
 
         @Override
         public void setWriteListener(WriteListener writeListener) {
-            // NOP
+            underlyingStream.setWriteListener(writeListener);
         }
     }
 
