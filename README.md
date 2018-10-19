@@ -140,6 +140,7 @@ Contributors
 * [Daniel Scott](https://github.com/danieljamesscott)
 * [Michal Svab](https://github.com/msvab)
 * [Christian Rigdon](https://github.com/Oakie3CR)
+* [Patrick Brückner](https://github.com/madmuffin1)
 
 
 License
