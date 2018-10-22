@@ -2,7 +2,6 @@ package net.gini.dropwizard.gelf.filters;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Stopwatch;
-import com.google.common.io.CountingOutputStream;
 import com.google.common.net.HttpHeaders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +16,6 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
@@ -203,69 +201,6 @@ public class GelfLoggingFilter implements Filter {
         MDC.remove(AdditionalKeys.RESP_ENCODING);
         MDC.remove(AdditionalKeys.RESP_TIME);
         MDC.remove(AdditionalKeys.RESP_LENGTH);
-    }
-
-    /**
-     * An implementation of {@link ServletOutputStream} which counts the bytes being
-     * written using a {@link CountingOutputStream}.
-     */
-    private static final class CountingServletOutputStream extends ServletOutputStream {
-
-        /**
-         * The underlying stream that is wrapped by CountingOutputStream.
-         */
-        private final ServletOutputStream underlyingStream;
-        private final CountingOutputStream outputStream;
-
-        private CountingServletOutputStream(ServletOutputStream servletOutputStream) {
-            this.underlyingStream = servletOutputStream;
-            this.outputStream = new CountingOutputStream(servletOutputStream);
-        }
-
-        /**
-         * Writes the specified byte to this output stream. The general
-         * contract for <code>write</code> is that one byte is written
-         * to the output stream. The byte to be written is the eight
-         * low-order bits of the argument <code>b</code>. The 24
-         * high-order bits of <code>b</code> are ignored.
-         * <p>
-         * Subclasses of <code>OutputStream</code> must provide an
-         * implementation for this method.
-         * </p>
-         *
-         * @param b the <code>byte</code>.
-         * @throws java.io.IOException if an I/O error occurs. In particular,
-         *                             an <code>IOException</code> may be thrown if the
-         *                             output stream has been closed.
-         */
-        @Override
-        public void write(int b) throws IOException {
-            outputStream.write(b);
-        }
-
-        @Override
-        public void write(final byte[] b, final int off, final int len) throws IOException {
-            outputStream.write(b, off, len);
-        }
-
-        @Override
-        public void flush() throws IOException {
-            underlyingStream.flush();
-        }
-
-        public long getCount() {
-            return outputStream.getCount();
-        }
-
-        @Override
-        public boolean isReady() {
-            return underlyingStream.isReady();
-        }
-
-        @Override
-        public void setWriteListener(WriteListener writeListener) {
-            underlyingStream.setWriteListener(writeListener);
-        }
     }
 
     /**
