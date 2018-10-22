@@ -1,6 +1,7 @@
 package net.gini.dropwizard.gelf.filters;
 
 import com.google.common.base.Charsets;
+import com.google.common.base.Strings;
 
 import net.gini.dropwizard.gelf.testing.ExpectedLogEntry;
 
@@ -12,6 +13,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -19,15 +21,24 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import javax.servlet.AsyncContext;
 import javax.servlet.DispatcherType;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.WriteListener;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.Suspended;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
@@ -37,6 +48,7 @@ import io.dropwizard.Configuration;
 import io.dropwizard.setup.Environment;
 import io.dropwizard.testing.junit.DropwizardAppRule;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static net.gini.dropwizard.gelf.filters.GelfLoggingFilter.AdditionalKeys.PROTOCOL;
 import static net.gini.dropwizard.gelf.filters.GelfLoggingFilter.AdditionalKeys.REQ_URI;
@@ -54,7 +66,7 @@ public class GelfLoggingFilterTest {
     private static final String HELLO_WORLD = "Hello wörld!";
     private static final byte[] HELLO_WORLD_BYTES = HELLO_WORLD.getBytes(Charsets.UTF_8);
     private static final int LARGE_ITERATIONS = 1024;
-    private static final long SLEEP_TIME_IN_MS = TimeUnit.SECONDS.toMillis(1);
+    private static final long SLEEP_TIME_IN_MS = SECONDS.toMillis(1);
 
     @ClassRule
     public static DropwizardAppRule<Configuration> APP = new DropwizardAppRule<>(TestApp.class);
@@ -121,6 +133,28 @@ public class GelfLoggingFilterTest {
         assertThat(mdc.get(RESP_CONTENT_TYPE)).isEqualTo(TEXT_PLAIN);
         verifyLength(logEntry, HELLO_WORLD_BYTES.length);
         verifyResponseTimeLongerThan(logEntry, SLEEP_TIME_IN_MS, TimeUnit.MILLISECONDS);
+    }
+
+    @Test
+    public void testWriteListenerWorks() throws InterruptedException {
+        expectedLogEntry.mdcKeyAndValue(REQ_URI, "/streaming-repeat/10000");
+
+        final int count = 10_000;
+        final String value = "lorem ipsum dolor";
+        final Response response = target.path("/streaming-repeat/{count}")
+                .queryParam("value", "{value}")
+                .resolveTemplate("count", count)
+                .resolveTemplate("value", value)
+                .request()
+                .get();
+
+        assertThat(response.getStatus()).isEqualTo(HttpStatus.OK_200);
+        assertThat(response.readEntity(String.class)).isEqualTo(Strings.repeat(value, count));
+        final ILoggingEvent logEntry = expectedLogEntry.getEntry();
+        final Map<String, String> mdc = logEntry.getMDCPropertyMap();
+        assertThat(mdc.get(PROTOCOL)).isEqualTo("HTTP/1.1");
+        assertThat(mdc.get(RESP_STATUS)).isEqualTo("200");
+        verifyLength(logEntry, value.getBytes(StandardCharsets.UTF_8).length * count);
     }
 
     private void verifyLength(final ILoggingEvent event, final int expectedSize) {
@@ -190,6 +224,40 @@ public class GelfLoggingFilterTest {
                     }
                 }
             };
+        }
+
+        @Path("/streaming-repeat/{count}")
+        @GET
+        public void streamingResponse(@PathParam("count") final int requestedCount,
+                                      @DefaultValue("lorem ipsum") @QueryParam("value") final String value,
+                                      @Suspended final AsyncResponse response,
+                                      @Context HttpServletRequest servletRequest,
+                                      @Context HttpServletResponse servletResponse) throws IOException {
+            assertThat(servletRequest.isAsyncStarted()).isTrue();
+
+            final AsyncContext asyncContext = servletRequest.getAsyncContext();
+            asyncContext.setTimeout(SECONDS.toMillis(1));
+
+            final ServletOutputStream outputStream = servletResponse.getOutputStream();
+            outputStream.setWriteListener(new WriteListener() {
+                int count = 0;
+
+                @Override
+                public void onWritePossible() throws IOException {
+                    while (outputStream.isReady()) {
+                        if (count++ >= requestedCount) {
+                            asyncContext.complete();
+                            break;
+                        }
+                        outputStream.write(value.getBytes(StandardCharsets.UTF_8));
+                    }
+                }
+
+                @Override
+                public void onError(final Throwable t) {
+                    // Intentionally empty
+                }
+            });
         }
     }
 }
