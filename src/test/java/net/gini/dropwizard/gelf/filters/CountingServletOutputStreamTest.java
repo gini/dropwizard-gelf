@@ -32,6 +32,13 @@ public class CountingServletOutputStreamTest {
     }
 
     @Test
+    public void testThatCloseDelegates() throws IOException {
+        outputStream.close();
+
+        verify(delegate).close();
+    }
+
+    @Test
     public void testThatFlushDelegates() throws IOException {
         outputStream.flush();
 

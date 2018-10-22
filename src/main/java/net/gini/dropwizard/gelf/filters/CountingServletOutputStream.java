@@ -51,6 +51,11 @@ final class CountingServletOutputStream extends ServletOutputStream {
     }
 
     @Override
+    public void close() throws IOException {
+        underlyingStream.close();
+    }
+
+    @Override
     public void flush() throws IOException {
         underlyingStream.flush();
     }
