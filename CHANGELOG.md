@@ -20,6 +20,14 @@ Dropwizard GELF Changelog
 * Upgrade to Dropwizard 1.3.0
 
 
+1.2.9-1
+-------
+
+* Upgrade to Dropwizard 1.2.9
+* Better implementation for `CountingServletOutputStream#write(byte[], int,
+  int)`. Should result in a big performance improvement. Before, a call to
+  #write(int) was made for every single byte of a response's body.
+
 1.2.0-2
 -------
 
