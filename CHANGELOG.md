@@ -1,6 +1,19 @@
 Dropwizard GELF Changelog
 =========================
 
+1.3.7-1
+-------
+
+* Upgrade to Dropwizard 1.3.7
+* [#27](https://github.com/gini/dropwizard-gelf/issues/27): Allow `WriteListener`s to be used with dropwizard-gelf
+* `CountingServletOutputStream`, which is used to wrap the response's output
+  stream, delegates more operations to the underlying stream now, such as
+  `flush()` and `close()`. It also has a better implementation for
+  `#write(byte[], int, int)`, which should result in a big performance
+  improvement. Before, a call to `#write(int)` was made for every single byte of
+  a response's body.
+
+
 1.3.0-1
 -------
 
