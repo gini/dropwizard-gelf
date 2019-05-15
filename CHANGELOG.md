@@ -1,6 +1,11 @@
 Dropwizard GELF Changelog
 =========================
 
+1.3.10-1
+--------
+
+* Upgrade to Dropwizard 1.3.10
+
 1.3.7-1
 -------
 
