@@ -3,4 +3,5 @@ language: java
 after_success:
   - mvn -B jacoco:report coveralls:report
 jdk:
-  - oraclejdk8
+  - openjdk8
+  - openjdk11
